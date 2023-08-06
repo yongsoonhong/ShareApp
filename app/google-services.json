@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "554412725695",
+    "project_id": "share-app-87bba",
+    "storage_bucket": "share-app-87bba.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554412725695:android:5728a567421e87dbb37d0a",
+        "android_client_info": {
+          "package_name": "my.edu.tarc.fyp.shareapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "554412725695-t62so994s730gs127mj3472u0f9ltg5r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCH9jhYvC6ixLyMIgl7xD05fYFqkN8WirM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "554412725695-t62so994s730gs127mj3472u0f9ltg5r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

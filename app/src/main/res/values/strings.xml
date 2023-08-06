@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ShareApp</string>
+    <string name="save_action">Save\n</string>
+    <string name="item_title_req">Title*</string>
+    <string name="description_req">Description*</string>
+    <string name="required_fields">* Required Fields</string>
+    <string name="expiry_req">Expiry Date*\n</string>
+</resources>
