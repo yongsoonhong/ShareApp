@@ -7,14 +7,22 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -22,8 +30,11 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +44,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -59,19 +72,33 @@ fun SharedItemAddScreen(
     sharedItemUiState: SharedItemUiState,
     onItemValueChange: (SharedItemDetails) -> Unit,
     onSaveClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onMapClick: () -> Unit
+
 ) {
     Column(
         modifier = modifier
             .padding(dimensionResource(R.dimen.padding_medium))
-            .verticalScroll(rememberScrollState())
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large))
     ) {
-        ImagePicker(sharedItemUiState, onItemValueChange)
-        ItemInputForm(sharedItemUiState, onItemValueChange, enabled = true)
-        LocationPicker(sharedItemUiState, onItemValueChange)
-        SaveButton(onSaveClick, sharedItemUiState.isEntryValid)
+        Column(
+            modifier = Modifier
+                .padding(15.dp)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Center
+
+        ){
+            ImagePicker(sharedItemUiState, onItemValueChange)
+            ItemInputForm(sharedItemUiState, onItemValueChange, enabled = true)
+            Spacer(modifier = Modifier.padding(15.dp))
+            LocationPicker(sharedItemUiState, onItemValueChange, onMapClick)
+            Spacer(modifier = Modifier.padding(15.dp))
+            SaveButton(onSaveClick, sharedItemUiState.isEntryValid)
+        }
+
+
     }
 }
 
@@ -94,28 +121,29 @@ fun ImagePicker(
         }
     )
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
 
-        Button(
-            onClick = {
-                singlePhotoPickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            }
-        ) {
-            Text(text = "pick photo")
-        }
-
         AsyncImage(
-            model = selectedImageUri,
+            model = selectedImageUri?:R.drawable.add_a_photo,
             contentDescription = null,
             modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
+                .height(100.dp)
+                .width(100.dp)
+                .padding(10.dp)
+                .clickable {
+                    singlePhotoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }
+                .border(BorderStroke(2.dp, Color.LightGray)),
             contentScale = ContentScale.Crop
         )
+        Spacer(modifier = Modifier.padding(15.dp))
+        Text(text = "Click to Add or Change Image")
     }
 }
 
@@ -156,7 +184,7 @@ fun ItemInputForm(
             ),
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
-            singleLine = true
+            singleLine = false
         )
         if (enabled) {
             Text(
@@ -164,8 +192,6 @@ fun ItemInputForm(
                 modifier = Modifier.padding(start = dimensionResource(id = R.dimen.padding_medium))
             )
         }
-
-
     }
 }
 
@@ -173,6 +199,8 @@ fun ItemInputForm(
 fun LocationPicker(
     sharedItemUiState: SharedItemUiState,
     onItemValueChange: (SharedItemDetails) -> Unit,
+    onMapClick: () -> Unit
+
 ) {
     val permissions = listOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -192,7 +220,8 @@ fun LocationPicker(
         MapsScreen2(
             usePreciseLocation = usePreciseLocation,
             sharedItemUiState = sharedItemUiState,
-            onItemValueChange = onItemValueChange
+            onItemValueChange = onItemValueChange,
+            onMapClick = onMapClick
         )
     }
 }
@@ -202,7 +231,8 @@ fun LocationPicker(
 fun MapsScreen2(
     usePreciseLocation: Boolean,
     sharedItemUiState: SharedItemUiState,
-    onItemValueChange: (SharedItemDetails) -> Unit
+    onItemValueChange: (SharedItemDetails) -> Unit,
+    onMapClick: () -> Unit
 ) {
     val itemDetails = sharedItemUiState.itemDetails
     val context = LocalContext.current
@@ -212,7 +242,7 @@ fun MapsScreen2(
     val scope = rememberCoroutineScope()
     var currentLocation by remember { mutableStateOf(LatLng(0.0,0.0)) }
     val mapProperties = remember { MapProperties(maxZoomPreference = 20f, minZoomPreference = 1f) }
-    val mapUiSettings = remember { MapUiSettings(mapToolbarEnabled = false, myLocationButtonEnabled = true, scrollGesturesEnabled = true, zoomControlsEnabled = false) }
+    val mapUiSettings = remember { MapUiSettings(mapToolbarEnabled = false, myLocationButtonEnabled = true, scrollGesturesEnabled = false, zoomControlsEnabled = false) }
     val cameraPositionState = remember { mutableStateOf(CameraPositionState(CameraPosition.fromLatLngZoom(currentLocation, 15f))) }
 
     fun setCameraPosition() {
@@ -235,9 +265,9 @@ fun MapsScreen2(
         }
     }
 
-    LaunchedEffect(Unit) {
-        setCurrentLocation()
-    }
+//    LaunchedEffect(Unit) {
+//        setCurrentLocation()
+//    }
 
 
     LaunchedEffect(cameraPositionState.value.position.target) {
@@ -248,23 +278,51 @@ fun MapsScreen2(
         }
     }
 
+    LaunchedEffect(itemDetails.latLng) {
+        if (itemDetails.latLng != currentLocation && itemDetails.latLng!= null){
+            cameraPositionState.value.position = CameraPosition.fromLatLngZoom(itemDetails.latLng!!, 15f)
+        }
+    }
 
 
     Column {
-        Button(onClick = {
-            scope.launch(Dispatchers.IO) {
-                setCurrentLocation()
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedButton(
+                shape = RoundedCornerShape(10.dp,0.dp,0.dp,0.dp),
+                modifier = Modifier
+                    .weight(1f),
+
+                onClick = {
+                    scope.launch(Dispatchers.IO) {
+                        setCurrentLocation()
+                    }
+                }) {
+                Text(text = "Use Current Location")
             }
-        }) {
-            Text(text = "Use Current Location")
+            OutlinedButton(
+                shape = RoundedCornerShape(0.dp,10.dp,0.dp,0.dp),
+                modifier = Modifier
+                    .weight(1f),
+
+                onClick = {
+                    onMapClick()
+                }) {
+                Text(text = "Choose your own location")
+            }
         }
 
 
-        Box(modifier = Modifier.fillMaxWidth().height(200.dp)) {
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)) {
             GoogleMap(properties = mapProperties,
                 uiSettings = mapUiSettings,
                 cameraPositionState = cameraPositionState.value,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
             )
             Column(
                 modifier = Modifier.fillMaxSize(),
@@ -283,12 +341,24 @@ fun MapsScreen2(
 
 @Composable
 fun SaveButton(onSaveClick: () -> Unit, isEnabled: Boolean) {
-    Button(
-        onClick = onSaveClick,
-        enabled = isEnabled,
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(text = stringResource(R.string.save_action))
+    Column {
+        Button(
+            shape = RoundedCornerShape(10.dp),
+            onClick = onSaveClick,
+            enabled = isEnabled,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Cyan,
+                contentColor= Color.Black,
+                disabledContainerColor= Color.LightGray,
+                disabledContentColor= Color.Black,
+            )
+
+        ) {
+            Text(text = stringResource(R.string.save_action))
+        }
     }
+
 }

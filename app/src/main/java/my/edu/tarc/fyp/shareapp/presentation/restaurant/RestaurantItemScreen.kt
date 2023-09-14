@@ -45,6 +45,7 @@ import my.edu.tarc.fyp.shareapp.domain.Restaurant
 @SuppressLint("MissingPermission")
 @Composable
 fun RestaurantItemScreen(
+    currentLocation: LatLng,
     onUserLocationChange:(LatLng) -> Unit,
     onRefresh: () -> Unit,
     isLoading: Boolean,
@@ -86,6 +87,7 @@ fun RestaurantItemScreen(
 
 
         RestaurantItemScreenBody(
+            currentLocation = currentLocation,
             onRefresh = onRefresh,
             isLoading = isLoading,
             onItemClick = onItemClick,
@@ -98,6 +100,7 @@ fun RestaurantItemScreen(
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun RestaurantItemScreenBody(
+    currentLocation: LatLng,
     onRefresh: () -> Unit,
     isLoading: Boolean,
     onItemClick: (Restaurant) -> Unit,
@@ -119,15 +122,6 @@ fun RestaurantItemScreenBody(
     }
 
     Scaffold (
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
-                    Text(text = "Add")
-                },
-                onClick =  onAddClick
-            )
-        }
     ) {
         Box(modifier = Modifier
             .fillMaxSize()
@@ -144,8 +138,21 @@ fun RestaurantItemScreenBody(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val latChange = 10 / 110.574
+                        val longChange = 10 / (111.320 * Math.cos(Math.toRadians(currentLocation.latitude)))
+
+                        val minLat = currentLocation.latitude - latChange
+                        val maxLat = currentLocation.latitude + latChange
+
+                        val minLong = currentLocation.longitude - longChange
+                        val maxLong = currentLocation.longitude + longChange
+
                         items(restaurants) { restaurant ->
-                            if(restaurant != null) {
+                            if(restaurant != null &&
+                                (restaurant.latitude!! >= minLat) &&
+                                (restaurant.latitude <= maxLat) &&
+                                (restaurant.longitude!! >= minLong) &&
+                                (restaurant.longitude <= maxLong)) {
                                 RestaurantItemItem(
                                     restaurant = restaurant,
                                     onItemClick = onItemClick

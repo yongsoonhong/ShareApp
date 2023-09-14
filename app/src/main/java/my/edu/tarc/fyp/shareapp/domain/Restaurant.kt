@@ -9,7 +9,9 @@ data class Restaurant(
     val description: String? = null,
     val noLike: Int? = null,
     val noView: Int? = null,
-    var imageUrl: String? = null
+    var imageUrl: String? = null,
+    val longitude: Double? = null,
+    val latitude: Double? = null
 ) {
-    constructor() : this(null, "", "", null, null, null, null, null, null)
+    constructor() : this(null, "", "", null, null, null, null, null, null, null, null)
 }

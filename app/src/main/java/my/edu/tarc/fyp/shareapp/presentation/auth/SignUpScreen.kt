@@ -1,6 +1,9 @@
 package my.edu.tarc.fyp.shareapp.presentation.auth
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -31,27 +35,57 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.launch
 import my.edu.tarc.fyp.shareapp.R
+import my.edu.tarc.fyp.shareapp.data.Constant
 
 
 @Composable
 fun SignUpScreen(
+    signInSuccess: () -> Unit,
     onSignInClick: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+
+    val googleSignInState = viewModel.googleState.value
+
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+            val account = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+            try {
+                val result = account.getResult(ApiException::class.java)
+                val credentials = GoogleAuthProvider.getCredential(result.idToken, null)
+                viewModel.googleSignIn(credentials)
+            } catch (it: ApiException) {
+                print(it)
+            }
+        }
+
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val state = viewModel.signUpState.collectAsState(initial = null)
+
+
+
+
+
 
     Column(
         modifier = Modifier
@@ -60,11 +94,21 @@ fun SignUpScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.applogo),
+            contentDescription = "App Logo",
+            modifier = Modifier
+                .size(150.dp)
+                .clip(shape = CircleShape),
+            contentScale = ContentScale.Crop,
+        )
+        Spacer(modifier = Modifier.padding(10.dp))
+
         Text(
             modifier = Modifier.padding(bottom = 10.dp),
             text = "Create Account",
             fontWeight = FontWeight.Bold,
-            fontSize = 35.sp,
+            fontSize = 30.sp,
 //            fontFamily = RegularFont,
         )
         Text(
@@ -98,6 +142,7 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextField(
             modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
             value = password,
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.LightGray,
@@ -148,7 +193,7 @@ fun SignUpScreen(
                 .clickable {
                     onSignInClick()
                 },
-            text = "Already Have an account? sign In",
+            text = "Already Have an account? Sign In",
             fontWeight = FontWeight.Bold, color = Color.Black
         )
         Text(
@@ -164,20 +209,19 @@ fun SignUpScreen(
                 .fillMaxWidth()
                 .padding(top = 10.dp), horizontalArrangement = Arrangement.Center
         ) {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = {
+                val gso= GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken(Constant.ServerClient)
+                .build()
+
+                val googleSingInClient = GoogleSignIn.getClient(context, gso)
+
+                launcher.launch(googleSingInClient.signInIntent)
+            }) {
                 Icon(
                     modifier = Modifier.size(50.dp),
                     painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "Google Icon", tint = Color.Unspecified
-                )
-            }
-            Spacer(modifier = Modifier.width(20.dp))
-            IconButton(onClick = {
-
-            }) {
-                Icon(
-                    modifier = Modifier.size(52.dp),
-                    painter = painterResource(id = R.drawable.ic_facebook),
                     contentDescription = "Google Icon", tint = Color.Unspecified
                 )
             }
@@ -198,6 +242,15 @@ fun SignUpScreen(
             if (state.value?.isError?.isNotBlank() == true) {
                 val error = state.value?.isError
                 Toast.makeText(context, "$error", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    LaunchedEffect(key1 = googleSignInState.success) {
+        scope.launch {
+            if (googleSignInState.success != null) {
+                Toast.makeText(context, "Sign In Success", Toast.LENGTH_LONG).show()
+                signInSuccess()
             }
         }
     }

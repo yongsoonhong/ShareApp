@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
@@ -45,8 +46,8 @@ fun NearbyItemItem(
                 model = sharedItem.imageUrl,
                 contentDescription = sharedItem.title,
                 modifier = Modifier
-                    .weight(1.5f)
-                    .fillMaxHeight(),
+                    .fillMaxHeight()
+                    .width(130.dp),
                 contentScale = ContentScale.Crop
             )
             Column(
@@ -59,27 +60,22 @@ fun NearbyItemItem(
                 Text(
                     text = sharedItem.title,
                     style = MaterialTheme.typography.h6,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = sharedItem.description,
                     fontStyle = FontStyle.Italic,
                     color = Color.LightGray,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Row {
                     Text(
                         text = "Added in ${sharedItem.dateAdded}",
                         style = MaterialTheme.typography.caption,
-                        fontSize = 10.sp
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "No of View: ${sharedItem.noView}",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.End,
                         fontSize = 10.sp
                     )
                 }

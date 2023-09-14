@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
@@ -46,7 +47,7 @@ fun RestaurantItemItem(
                 model = restaurant.imageUrl,
                 contentDescription = restaurant.restaurantName,
                 modifier = Modifier
-                    .weight(1.5f)
+                    .width(130.dp)
                     .fillMaxHeight(),
                 contentScale = ContentScale.Crop
             )

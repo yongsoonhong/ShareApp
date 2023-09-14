@@ -2,6 +2,7 @@ package my.edu.tarc.fyp.shareapp.presentation.nearby
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,17 +40,20 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import my.edu.tarc.fyp.shareapp.PermissionBox
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.MapsScreen2
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemDetails
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemUiState
+import java.lang.Math.cos
 
 
 @SuppressLint("MissingPermission")
 @Composable
 fun NearbyItemScreen(
+    currentLocation: LatLng,
     onUserLocationChange:(LatLng) -> Unit,
     onRefresh: () -> Unit,
     isLoading: Boolean,
@@ -84,12 +89,14 @@ fun NearbyItemScreen(
             }
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(true) {
             setCurrentLocation()
         }
 
 
+
         NearbyItemScreenBody(
+            currentLocation = currentLocation,
             onRefresh = onRefresh,
             isLoading = isLoading,
             onItemClick = onItemClick,
@@ -102,6 +109,7 @@ fun NearbyItemScreen(
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun NearbyItemScreenBody(
+    currentLocation: LatLng,
     onRefresh: () -> Unit,
     isLoading: Boolean,
     onItemClick: (SharedItem) -> Unit,
@@ -126,9 +134,10 @@ fun NearbyItemScreenBody(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 text = {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
-                    Text(text = "Add")
+                    Icon(imageVector = Icons.Default.ShoppingCart, contentDescription = "Add")
+                    Text(text = "Own Shared Item")
                 },
+                modifier = Modifier.padding(bottom = 50.dp),
                 onClick =  onAddClick
             )
         }
@@ -148,8 +157,24 @@ fun NearbyItemScreenBody(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        val latChange = 10 / 110.574
+                        val longChange = 10 / (111.320 * cos(Math.toRadians(currentLocation.latitude)))
+
+                        val minLat = currentLocation.latitude - latChange
+                        val maxLat = currentLocation.latitude + latChange
+
+                        val minLong = currentLocation.longitude - longChange
+                        val maxLong = currentLocation.longitude + longChange
+
+
+
                         items(sharedItems) { sharedItem ->
-                            if(sharedItem != null && sharedItem.userId != Firebase.auth.currentUser?.uid) {
+                            if((sharedItem != null) &&
+                                (sharedItem.userId != Firebase.auth.currentUser?.uid) &&
+                                (sharedItem.latitude!! >= minLat) &&
+                                (sharedItem.latitude <= maxLat) &&
+                                (sharedItem.longitude!! >= minLong) &&
+                                (sharedItem.longitude <= maxLong)) {
                                 NearbyItemItem(
                                     sharedItem = sharedItem,
                                     onItemClick = onItemClick

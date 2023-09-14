@@ -4,18 +4,23 @@ package my.edu.tarc.fyp.shareapp.presentation.auth
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -62,19 +67,26 @@ fun SignInScreen(
             .padding(start = 30.dp, end = 30.dp),
         verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.applogo),
+            contentDescription = "App Logo",
+            modifier = Modifier
+                .size(150.dp)
+                .clip(shape = CircleShape),
+            contentScale = ContentScale.Crop,
+        )
+        Spacer(modifier = Modifier.padding(10.dp))
         Text(
             modifier = Modifier.padding(bottom = 10.dp),
             text = "Login",
             fontWeight = FontWeight.Bold,
-            fontSize = 35.sp,
-//            fontFamily = RegularFont,
+            fontSize = 30.sp,
         )
         Text(
             text = "Enter your credential's to login",
             fontWeight = FontWeight.Medium,
             fontSize = 15.sp,
             color = Color.Gray,
-//            fontFamily = Type()
         )
         TextField(
             value = email,
@@ -97,6 +109,7 @@ fun SignInScreen(
             onValueChange = {
                 password = it
             },
+            visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color.LightGray,
@@ -128,18 +141,24 @@ fun SignInScreen(
             if (state.value?.isLoading == true) {
                 CircularProgressIndicator()
             }
-
         }
         Text(
-            text = "New User? Sign Up ",
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.clickable {
-                onSignUpClick()
-            }
-//            fontFamily = RegularFont
+            modifier = Modifier
+                .padding(15.dp)
+                .clickable {
+                    onSignUpClick()
+                },
+            text = "New User? Sign Up",
+            fontWeight = FontWeight.Bold, color = Color.Black
         )
-        Text(text = "or connect with", fontWeight = FontWeight.Medium, color = Color.Gray)
+        Text(
+            modifier = Modifier
+                .padding(
+                    top = 40.dp,
+                ),
+            text = "Or connect with",
+            fontWeight = FontWeight.Medium, color = Color.Gray
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -160,17 +179,6 @@ fun SignInScreen(
                 Icon(
                     painter = painterResource(id =  R.drawable.ic_google),
                     contentDescription = "Google Icon",
-                    modifier = Modifier.size(50.dp),
-                    tint = Color.Unspecified
-                )
-            }
-            Spacer(modifier = Modifier.width(20.dp))
-            IconButton(onClick = {
-
-            }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_facebook),
-                    contentDescription = "Facebook Icon",
                     modifier = Modifier.size(50.dp),
                     tint = Color.Unspecified
                 )
@@ -204,11 +212,7 @@ fun SignInScreen(
             }
 
         }
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-            if (googleSignInState.loading){
-                CircularProgressIndicator()
-            }
-        }
+        
 
 
     }

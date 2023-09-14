@@ -1,6 +1,9 @@
 package my.edu.tarc.fyp.shareapp.presentation.main
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -13,28 +16,32 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.android.gms.maps.model.LatLng
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import kotlinx.coroutines.coroutineScope
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
-import my.edu.tarc.fyp.shareapp.ScreenContent
-import my.edu.tarc.fyp.shareapp.domain.Restaurant
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemAddScreen
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemDetails
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemDetailsScreen
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemEditScreen
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemScreen
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemViewModel
+import my.edu.tarc.fyp.shareapp.presentation.message.AddChannelScreen
+import my.edu.tarc.fyp.shareapp.presentation.message.ChatRoomScreen
+import my.edu.tarc.fyp.shareapp.presentation.message.MessageListScreen
+import my.edu.tarc.fyp.shareapp.presentation.message.MessageViewModel
 import my.edu.tarc.fyp.shareapp.presentation.nearby.NearbyItemDetailsScreen
 import my.edu.tarc.fyp.shareapp.presentation.nearby.NearbyItemScreen
 import my.edu.tarc.fyp.shareapp.presentation.nearby.NearbyItemViewModel
+import my.edu.tarc.fyp.shareapp.presentation.profile.ChangePasswordScreen
+import my.edu.tarc.fyp.shareapp.presentation.profile.EditUserProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileViewModel
+import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsToYouScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemDetailsScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemViewModel
+import my.edu.tarc.fyp.shareapp.presentation.sharedItem.FullMapScreen
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemAddScreen
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemDetails
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemDetailsScreen
@@ -43,6 +50,7 @@ import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemScreen
 import my.edu.tarc.fyp.shareapp.presentation.sharedItem.SharedItemViewModel
 import my.edu.tarc.fyp.shareapp.sharedViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
     navigation(
         route = "main",
@@ -57,6 +65,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 val sharedItems = viewModel.sharedItemPagingFlow.collectAsLazyPagingItems()
                 val isLoading by viewModel.isLoading.collectAsState()
                 val coroutineScope = rememberCoroutineScope()
+
+                val currentLocation by viewModel.currentUserLocation.collectAsState()
+
 
 
                 NearbyItemScreen(
@@ -77,8 +88,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                         }
                     },
                     onUserLocationChange = { latlng ->
-                        viewModel.currentUserLocation = latlng
-                    }
+                        viewModel.updateCurrentUserLocation(latlng)
+                    },
+                    currentLocation = currentLocation
                 )
             }
             composable(
@@ -96,15 +108,24 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     viewModel.getItemById(id)
                 }
 
-
-
                 val sharedItem by viewModel.sharedItem.observeAsState()
-                sharedItem?.let {
-                    NearbyItemDetailsScreen(
-                        sharedItem = it,
-                        onItemRequestClick = {
 
-                        }
+
+
+                sharedItem?.let {item ->
+                    viewModel.fetchUserData(item.userId!!)
+                }
+
+                val userData by viewModel.userData.observeAsState()
+
+                userData?.let {data ->
+                    NearbyItemDetailsScreen(
+                        sharedItem = sharedItem!!,
+                        onItemRequestClick = {
+                            viewModel.addRequest(sharedItemId!!,userData!!.uid)
+                            navController.navigate("message_room/${Firebase.auth.currentUser!!.uid}-${data.uid}")
+                        },
+                        userData = data
                     )
                 }
             }
@@ -117,8 +138,6 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     val sharedItems = viewModel.sharedItemPagingFlow.collectAsLazyPagingItems()
                     val isLoading by viewModel.isLoading.collectAsState()
                     val coroutineScope = rememberCoroutineScope()
-
-
 
                     SharedItemScreen(
                         isLoading = isLoading,
@@ -235,6 +254,21 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                                 viewModel.saveSharedItem()
                                 navController.popBackStack()
                             }
+                        },
+                        onMapClick = {
+                            navController.navigate("full_google_map")
+                        }
+                    )
+                }
+                composable("full_google_map"){
+                    val viewModel = it.sharedViewModel<SharedItemViewModel>(navController = navController)
+                    val sharedItemUiState = viewModel.sharedItemUiState
+                    FullMapScreen(
+                        usePreciseLocation = true,
+                        sharedItemUiState = sharedItemUiState,
+                        onItemValueChange = viewModel::updateUiState,
+                        onConfirm = {
+                            navController.popBackStack()
                         }
                     )
                 }
@@ -270,7 +304,8 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     },
                     onUserLocationChange = { latlng ->
                         viewModel.currentUserLocation = latlng
-                    }
+                    },
+                    currentLocation = viewModel.currentUserLocation
                 )
             }
             composable(
@@ -436,11 +471,121 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
             startDestination = "message_list",
         ){
             composable("message_list"){
-                ScreenContent(
-                    name = "message_list",
-                    onClick = { }
+                val viewModel = it.sharedViewModel<MessageViewModel>(navController = navController)
+
+                // Collect the channels as state
+                val channels by viewModel.channels.collectAsState(initial = emptyList())
+                val usersData = viewModel.usersData.value
+
+
+                Log.d("Channels", channels.toString())
+
+                // Composable Integration
+                MessageListScreen(
+                    onItemClick = { channel ->
+                        navController.navigate("message_room/${channel.channelId}")
+                    },
+                    channels = channels,
+                    usersData = usersData,
+                    onAddChannelClick = { navController.navigate("message_add") }
+
                 )
             }
+
+            composable(
+                route = "message_room/{channelId}",
+                arguments = listOf(navArgument("channelId") {
+                    type = NavType.StringType
+                })
+            ) { navBackStackEntry ->
+
+                val channelId = navBackStackEntry.arguments?.getString("channelId")
+                val viewModel: MessageViewModel = navBackStackEntry.sharedViewModel(navController = navController)
+
+                val channels by viewModel.channels.collectAsState()
+                val currentMessages by viewModel.currentMessages.collectAsState()
+                val usersData = viewModel.usersData.value
+                val sharedItems by viewModel.currentSharedItem.collectAsState()
+                val itemReqFrom by viewModel.currentItemRequestsFromUser.collectAsState()
+                val itemReqTo by viewModel.currentItemRequestsToUser.collectAsState()
+
+                // Fetch messages for the channel when we navigate to this composable
+                viewModel.fetchMessagesForChannel(channelId ?: "")
+
+
+                // Find the specific channel using channelId
+                val channel = channels.find { it.channelId == channelId }
+
+
+                val userData = channel?.let { usersData[it.user2] }
+                LaunchedEffect(userData){
+                    userData?.uid?.let {
+                        viewModel.getCurrentSharedItem(it)
+                        viewModel.clearCurrentItemRequestsToUser()
+                        viewModel.clearCurrentItemRequestsFromUser()
+                        viewModel.getCurrentRequestFromUser(it)
+                        viewModel.getCurrentRequestToUser(it)
+                    }
+                }
+
+
+                if (channel != null) {
+                    ChatRoomScreen(
+                        channel = channel,
+                        messages = currentMessages,
+                        sharedItems = sharedItems,
+                        userData = userData,  // Passing the user data map to the ChatRoomScreen
+                        onSendMessage = { messageText ->
+                            viewModel.send(messageText, channel.user1, channel.user2)
+                        },
+                        onSendRequest = {
+                            Log.d("SharedItemRequestInNav", it.toString())
+                            viewModel.addRequest(it.sharedItemId!!,it.userId!!)
+                        },
+                        itemRequestFrom = itemReqFrom,
+                        itemRequestTo = itemReqTo,
+                        onItemAcceptClick = {
+                            viewModel.acceptRequest(it)
+                            viewModel.clearCurrentItemRequestsToUser()
+                            viewModel.clearCurrentItemRequestsFromUser()
+                            viewModel.getCurrentRequestFromUser(userData!!.uid)
+                            viewModel.getCurrentRequestToUser(userData.uid)
+                        },
+                        onItemDeclineClick = {
+                            viewModel.rejectRequest(it)
+                            viewModel.clearCurrentItemRequestsToUser()
+                            viewModel.clearCurrentItemRequestsFromUser()
+                            viewModel.getCurrentRequestFromUser(userData!!.uid)
+                            viewModel.getCurrentRequestToUser(userData.uid)
+                        },
+                        onItemDeleteClick = {
+                            viewModel.deleteRequest(it)
+                            viewModel.clearCurrentItemRequestsToUser()
+                            viewModel.clearCurrentItemRequestsFromUser()
+                            viewModel.getCurrentRequestFromUser(userData!!.uid)
+                            viewModel.getCurrentRequestToUser(userData.uid)
+                        }
+                    )
+                } else {
+                    Log.e("Channel", "Error finding channel")
+                }
+            }
+
+            composable("message_add") { navBackStackEntry ->
+
+                val viewModel: MessageViewModel = navBackStackEntry.sharedViewModel(navController = navController)
+
+
+                AddChannelScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onCreateChannel = { uid ->
+                        viewModel.createChannelWithUID(uid)
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+
         }
         navigation(
             route = "main_profile",
@@ -459,8 +604,70 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                                 inclusive = true
                             }
                         }
+                    },
+                    onEditUserProfileClick = {
+                        navController.navigate("profile_editUserProfile")
+                    },
+                    onChangePasswordClick = {
+                        navController.navigate("profile_changePassword")
+                    },
+                    onRequestFromYouClick = {
+
+                    },
+                    onRequestToYouClick = {
+                        navController.navigate("profile_requestToYou")
                     }
                 )
+            }
+
+            composable("profile_editUserProfile"){
+                val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
+
+                EditUserProfileScreen(
+                    userData = Firebase.auth.currentUser,
+                    onSaveClick = { name, photoUrl ->
+                        viewModel.updateUserProfile(name, photoUrl)
+                        navController.popBackStack()
+                    },
+                    onCancelClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable("profile_changePassword"){
+                val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
+
+                ChangePasswordScreen(
+                    onSaveClick = { pass ->
+                        viewModel.updatePassword(pass)
+                        navController.popBackStack()
+
+                    },
+                    onCancelClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+
+            composable("profile_requestToYou"){
+                val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
+
+                val requests by viewModel.currentRequestsToUser.collectAsState()
+                val itemReqFrom by viewModel.currentItemRequestsToUser.collectAsState()
+                val userRequested by viewModel.currentRequestsToYouUser.collectAsState()
+
+                Log.d("requests", requests.toString())
+                Log.d("itemReqFrom", itemReqFrom.toString())
+                Log.d("userRequested", userRequested.toString())
+
+
+                RequestsToYouScreen(
+                    requests = requests,
+                    itemRequestToYou = itemReqFrom,
+                    userRequested = userRequested
+                )
+
             }
         }
     }

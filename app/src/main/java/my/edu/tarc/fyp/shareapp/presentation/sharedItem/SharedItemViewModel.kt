@@ -157,6 +157,7 @@ class SharedItemViewModel @Inject constructor(
                                 TAG,
                                 "DocumentSnapshot successfully written!"
                             )
+                            clearSharedItemDetails()
                         }
                         .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
 
@@ -165,6 +166,16 @@ class SharedItemViewModel @Inject constructor(
 
         }
 
+    }
+
+    fun clearSharedItemDetails(){
+        updateUiState(SharedItemDetails(
+            title = "",
+            description = "",
+            imageUri = null,
+            imageUrl= null,
+            latLng = null
+        ))
     }
 
     fun deleteItemById(sharedItemId: String){

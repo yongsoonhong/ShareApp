@@ -18,24 +18,9 @@ class NearbyItemPagingSource(private val viewModel: NearbyItemViewModel): Paging
 
     override suspend fun load(params: LoadParams<QuerySnapshot>): LoadResult<QuerySnapshot, SharedItem> {
 
-        val currentLat = viewModel.currentUserLocation.latitude
-        val currentLong = viewModel.currentUserLocation.longitude
 
 
         return try {
-
-
-
-            val targetDistance = 10
-
-            val latChange = targetDistance / 110.574
-            val longChange = targetDistance / (111.320 * kotlin.math.cos(currentLat))
-
-            val minLat = currentLat - latChange
-            val maxLat = currentLat + latChange
-
-            val minLong = currentLong - longChange
-            val maxLong = currentLong + longChange
 
 
 

@@ -1,7 +1,9 @@
 package my.edu.tarc.fyp.shareapp.presentation.manage
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +32,7 @@ import com.google.firebase.ktx.Firebase
 import my.edu.tarc.fyp.shareapp.domain.ManageItem
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ManageItemScreen(
@@ -60,6 +63,7 @@ fun ManageItemScreen(
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
                     Text(text = "Add")
                 },
+                modifier = Modifier.padding(bottom = 50.dp),
                 onClick =  onAddClick
             )
         }

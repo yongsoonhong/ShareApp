@@ -60,7 +60,8 @@ fun SharedItemScreen(
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add")
                     Text(text = "Add")
                 },
-                onClick =  onAddClick
+                onClick =  onAddClick,
+                modifier = Modifier.padding(bottom = 50.dp),
             )
         }
     ) {

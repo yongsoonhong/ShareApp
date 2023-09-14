@@ -1,6 +1,7 @@
 package my.edu.tarc.fyp.shareapp.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,10 +19,14 @@ object AppModule {
     @Singleton
     fun provideFirebaseAuth() = FirebaseAuth.getInstance()
 
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore() = FirebaseFirestore.getInstance()
+
 
     @Provides
     @Singleton
-    fun providesRepositoryImpl(firebaseAuth: FirebaseAuth): AuthRepository{
-        return AuthRepositoryImpl(firebaseAuth)
+    fun providesRepositoryImpl(firebaseAuth: FirebaseAuth, firestore: FirebaseFirestore): AuthRepository{
+        return AuthRepositoryImpl(firebaseAuth, firestore)
     }
 }
