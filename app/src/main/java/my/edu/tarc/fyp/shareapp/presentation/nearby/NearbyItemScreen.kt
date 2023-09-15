@@ -6,12 +6,15 @@ import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -26,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.LoadState
@@ -142,55 +146,66 @@ fun NearbyItemScreenBody(
             )
         }
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp)
-        ) {
-            if(sharedItems.loadState.refresh is LoadState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                SwipeRefresh(state = swipeRefreshState, onRefresh = { onRefresh() }) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val latChange = 10 / 110.574
-                        val longChange = 10 / (111.320 * cos(Math.toRadians(currentLocation.latitude)))
+        Column {
+            Text(
+                text = "Nearby Items",
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(10.dp)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp)
+            ) {
+                if(sharedItems.loadState.refresh is LoadState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    SwipeRefresh(state = swipeRefreshState, onRefresh = { onRefresh() }) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val latChange = 10 / 110.574
+                            val longChange = 10 / (111.320 * cos(Math.toRadians(currentLocation.latitude)))
 
-                        val minLat = currentLocation.latitude - latChange
-                        val maxLat = currentLocation.latitude + latChange
+                            val minLat = currentLocation.latitude - latChange
+                            val maxLat = currentLocation.latitude + latChange
 
-                        val minLong = currentLocation.longitude - longChange
-                        val maxLong = currentLocation.longitude + longChange
+                            val minLong = currentLocation.longitude - longChange
+                            val maxLong = currentLocation.longitude + longChange
 
 
 
-                        items(sharedItems) { sharedItem ->
-                            if((sharedItem != null) &&
-                                (sharedItem.userId != Firebase.auth.currentUser?.uid) &&
-                                (sharedItem.latitude!! >= minLat) &&
-                                (sharedItem.latitude <= maxLat) &&
-                                (sharedItem.longitude!! >= minLong) &&
-                                (sharedItem.longitude <= maxLong)) {
-                                NearbyItemItem(
-                                    sharedItem = sharedItem,
-                                    onItemClick = onItemClick
-                                )
+                            items(sharedItems) { sharedItem ->
+                                if((sharedItem != null) &&
+                                    (sharedItem.userId != Firebase.auth.currentUser?.uid) &&
+                                    (sharedItem.latitude!! >= minLat) &&
+                                    (sharedItem.latitude <= maxLat) &&
+                                    (sharedItem.longitude!! >= minLong) &&
+                                    (sharedItem.longitude <= maxLong)) {
+                                    NearbyItemItem(
+                                        sharedItem = sharedItem,
+                                        onItemClick = onItemClick
+                                    )
+                                }
                             }
-                        }
-                        item {
-                            if(sharedItems.loadState.append is LoadState.Loading) {
-                                CircularProgressIndicator()
+                            item {
+                                if(sharedItems.loadState.append is LoadState.Loading) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
-                }
 
+                }
             }
         }
+
+
     }
 
 

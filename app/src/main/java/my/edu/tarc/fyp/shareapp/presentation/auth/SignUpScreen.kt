@@ -249,7 +249,7 @@ fun SignUpScreen(
     LaunchedEffect(key1 = googleSignInState.success) {
         scope.launch {
             if (googleSignInState.success != null) {
-                Toast.makeText(context, "Sign In Success", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Sign Up Success", Toast.LENGTH_LONG).show()
                 signInSuccess()
             }
         }
