@@ -3,41 +3,40 @@ package my.edu.tarc.fyp.shareapp.presentation.main
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.ui.graphics.vector.ImageVector
+import my.edu.tarc.fyp.shareapp.R
 
 sealed class BottomBarItem(
     val route: String,
     val title: String,
-    val icon: ImageVector
+    val icon: Int
 ){
     object HomeScreen : BottomBarItem(
         route = "nearby_list",
         title = "Home",
-        icon = Icons.Default.Home
+        icon = R.drawable.baseline_home_24
     )
     object RestaurantScreen : BottomBarItem(
         route = "restaurant_list",
         title = "Restaurant",
-        icon = Icons.Default.ArrowBack
+        icon = R.drawable.baseline_shopping_bag_24
     )
 
     object FoodManageScreen : BottomBarItem(
         route = "manage_list",
         title = "Manage",
-        icon = Icons.Default.Add
+        icon = R.drawable.baseline_view_list_24
     )
     object MessageScreen : BottomBarItem(
         route = "message_list",
         title = "Message",
-        icon = Icons.Default.Send
+        icon = R.drawable.baseline_message_24
     )
     object UserScreen : BottomBarItem(
         route = "profile_home",
         title = "Profile",
-        icon = Icons.Default.AccountCircle
+        icon = R.drawable.baseline_person_24
     )
 
 }

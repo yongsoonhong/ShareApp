@@ -49,15 +49,6 @@ class MainActivity : ComponentActivity() {
                     val currentDestination = navBackStackEntry?.destination?.route
 
                     Scaffold(
-                        topBar = {
-                            TopAppBar(
-                                title = {
-                                    androidx.compose.material.Text(
-                                        text = currentDestination ?: "Share",
-                                    )
-                                }
-                            )
-                        },
                         bottomBar = { BottomBar(navController = navController) }
                     ) {
                         NavHost(navController = navController, startDestination = "auth") {

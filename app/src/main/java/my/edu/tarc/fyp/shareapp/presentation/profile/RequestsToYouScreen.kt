@@ -1,5 +1,6 @@
 package my.edu.tarc.fyp.shareapp.presentation.profile
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -40,11 +42,23 @@ import my.edu.tarc.fyp.shareapp.domain.UserData
 fun RequestsToYouScreen(
     requests: List<Request>,
     itemRequestToYou: Map<Request, SharedItem>,
-    userRequested: Map<Request, UserData>
+    userRequested: Map<Request, UserData>,
+    onAcceptClick: (Request) -> Unit,
+    onRejectClick: (Request) -> Unit
 ) {
     LazyColumn{
         items(requests){ request ->
-            RequestToYouItemScreen(request = request, itemRequestToYou = itemRequestToYou[request] , userRequested = userRequested[request])
+            RequestToYouItemScreen(
+                request = request,
+                itemRequestToYou = itemRequestToYou[request] ,
+                userRequested = userRequested[request],
+                onAcceptClick = {
+                    onAcceptClick(it)
+                },
+                onRejectClick = {
+                    onRejectClick(it)
+                }
+            )
         }
     }
 }
@@ -53,8 +67,12 @@ fun RequestsToYouScreen(
 fun RequestToYouItemScreen(
     request: Request,
     itemRequestToYou: SharedItem?,
-    userRequested: UserData?
+    userRequested: UserData?,
+    onAcceptClick: (Request) -> Unit,
+    onRejectClick: (Request) -> Unit
 ){
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -125,7 +143,7 @@ fun RequestToYouItemScreen(
                         contentAlignment = Alignment.CenterEnd
                     ) {
                         Text(
-                            text = "Date requested: ${request.timeRequest}",
+                            text = "Date requested: ${request.timeRequest.toDate()}",
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.Gray
                         )
@@ -141,7 +159,9 @@ fun RequestToYouItemScreen(
                     shape = RoundedCornerShape(10.dp,0.dp,0.dp,10.dp),
                     modifier = Modifier
                         .weight(1f),
-                    onClick = { }
+                    onClick = {
+                        onAcceptClick(request)
+                    }
                 ) {
                     Icon(imageVector = Icons.Filled.Check, contentDescription = "Accept")
                 }
@@ -149,10 +169,154 @@ fun RequestToYouItemScreen(
                     shape = RoundedCornerShape(0.dp,10.dp,10.dp,0.dp),
                     modifier = Modifier
                         .weight(1f),
-                    onClick = { },
+                    onClick = {
+                              onRejectClick(request)
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Icon(imageVector = Icons.Filled.Close, contentDescription = "Decline")
+                }
+            }
+
+
+        }
+
+
+
+
+    }
+}
+
+
+@Composable
+fun RequestsFromYouScreen(
+    requests: List<Request>,
+    itemRequestToYou: Map<Request, SharedItem>,
+    userRequested: Map<Request, UserData>,
+    onProceedClick: (Request, UserData?) -> Unit
+) {
+    LazyColumn{
+        items(requests){ request ->
+            RequestFromYouItemScreen(
+                request = request,
+                itemRequestToYou = itemRequestToYou[request] ,
+                userRequested = userRequested[request],
+                onProceedClick = { requestGet, userData ->
+                    onProceedClick(requestGet, userData)
+                }
+            )
+        }
+    }
+}
+@Composable
+fun RequestFromYouItemScreen(
+    request: Request,
+    itemRequestToYou: SharedItem?,
+    userRequested: UserData?,
+    onProceedClick: (Request, UserData?) -> Unit,
+){
+
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                AsyncImage(
+                    model = userRequested?.photoUrl ?: R.drawable.baseline_person_24,
+                    contentDescription = "User Profile Pic",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .width(50.dp)
+                        .height(50.dp)
+                )
+
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                Column {
+                    Text(
+                        text = userRequested?.displayName ?: "User",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "You requested to this user",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ){
+                AsyncImage(
+                    model = itemRequestToYou?.imageUrl ?: R.drawable.baseline_person_24,
+                    contentDescription = "User Profile Pic",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .width(50.dp)
+                        .height(50.dp)
+                )
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                Column {
+                    Text(
+                        text = itemRequestToYou?.title?:"Shared Item",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Box(
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Text(
+                            text = "Date requested: ${request.timeRequest.toDate()}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.padding(8.dp).fillMaxWidth()
+            ) {
+                Text(
+                    text = "Status: ${request.status}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Button(
+                    shape = CircleShape,
+                    enabled = request.status != "Pending",
+                    onClick = {
+                        onProceedClick(request, userRequested)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (request.status == "Rejected") Color.Red else Color.Green,
+                        disabledContainerColor = Color.LightGray
+                    )
+                ) {
+                    Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = "Item Received")
                 }
             }
 

@@ -37,6 +37,7 @@ import my.edu.tarc.fyp.shareapp.presentation.profile.ChangePasswordScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.EditUserProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileViewModel
+import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsFromYouScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsToYouScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemDetailsScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemScreen
@@ -612,6 +613,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                         navController.navigate("profile_changePassword")
                     },
                     onRequestFromYouClick = {
+                        navController.navigate("profile_requestFromYou")
 
                     },
                     onRequestToYouClick = {
@@ -650,22 +652,53 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 )
             }
 
+            composable("profile_requestFromYou"){
+                val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
+
+                val requests by viewModel.currentRequestsFromUser.collectAsState()
+                val itemReqFrom by viewModel.currentItemRequestsFromUser.collectAsState()
+                val userRequested by viewModel.currentRequestsFromYouUser.collectAsState()
+
+
+
+                RequestsFromYouScreen(
+                    requests = requests,
+                    itemRequestToYou = itemReqFrom,
+                    userRequested = userRequested,
+                    onProceedClick = { requestGet, userData ->
+                        viewModel.deleteRequest(requestGet)
+                        viewModel.clearCurrentRequestFromYou()
+                        viewModel.getCurrentRequestFromYou()
+                        if (userData != null) {
+                            navController.navigate("message_room/${Firebase.auth.currentUser!!.uid}-${userData.uid}")
+                        }
+                    },
+                )
+
+            }
             composable("profile_requestToYou"){
                 val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
 
                 val requests by viewModel.currentRequestsToUser.collectAsState()
-                val itemReqFrom by viewModel.currentItemRequestsToUser.collectAsState()
+                val itemReqTo by viewModel.currentItemRequestsToUser.collectAsState()
                 val userRequested by viewModel.currentRequestsToYouUser.collectAsState()
 
-                Log.d("requests", requests.toString())
-                Log.d("itemReqFrom", itemReqFrom.toString())
-                Log.d("userRequested", userRequested.toString())
 
 
                 RequestsToYouScreen(
                     requests = requests,
-                    itemRequestToYou = itemReqFrom,
-                    userRequested = userRequested
+                    itemRequestToYou = itemReqTo,
+                    userRequested = userRequested,
+                    onAcceptClick = { requestGet ->
+                        viewModel.acceptRequest(requestGet)
+                        viewModel.clearCurrentRequestToYou()
+                        viewModel.getCurrentRequestToYou()
+                    },
+                    onRejectClick = { requestGet ->
+                        viewModel.rejectRequest(requestGet)
+                        viewModel.clearCurrentRequestToYou()
+                        viewModel.getCurrentRequestToYou()
+                    }
                 )
 
             }
