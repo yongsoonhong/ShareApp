@@ -241,7 +241,7 @@ fun SignUpScreen(
         scope.launch {
             if (state.value?.isError?.isNotBlank() == true) {
                 val error = state.value?.isError
-                Toast.makeText(context, "$error", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Sign Up Success", Toast.LENGTH_LONG).show()
             }
         }
     }

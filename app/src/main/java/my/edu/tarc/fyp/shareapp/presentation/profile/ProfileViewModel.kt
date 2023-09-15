@@ -122,6 +122,7 @@ class ProfileViewModel @Inject constructor(
     fun getCurrentRequestToYou() {
         val requestId = "${user!!.uid}request"
 
+
         db.collection("requests")
             .document(requestId)
             .collection("requestto")
