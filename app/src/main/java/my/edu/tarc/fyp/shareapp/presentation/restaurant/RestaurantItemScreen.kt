@@ -5,12 +5,15 @@ import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -24,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -123,50 +127,64 @@ fun RestaurantItemScreenBody(
 
     Scaffold (
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp)
-        ) {
-            if(restaurants.loadState.refresh is LoadState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                SwipeRefresh(state = swipeRefreshState, onRefresh = { onRefresh() }) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val latChange = 10 / 110.574
-                        val longChange = 10 / (111.320 * Math.cos(Math.toRadians(currentLocation.latitude)))
 
-                        val minLat = currentLocation.latitude - latChange
-                        val maxLat = currentLocation.latitude + latChange
+        Column {
+            Text(
+                text = "Restaurants",
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(10.dp)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
 
-                        val minLong = currentLocation.longitude - longChange
-                        val maxLong = currentLocation.longitude + longChange
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
+            ) {
+                if (restaurants.loadState.refresh is LoadState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    SwipeRefresh(state = swipeRefreshState, onRefresh = { onRefresh() }) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val latChange = 10 / 110.574
+                            val longChange =
+                                10 / (111.320 * Math.cos(Math.toRadians(currentLocation.latitude)))
 
-                        items(restaurants) { restaurant ->
-                            if(restaurant != null &&
-                                (restaurant.latitude!! >= minLat) &&
-                                (restaurant.latitude <= maxLat) &&
-                                (restaurant.longitude!! >= minLong) &&
-                                (restaurant.longitude <= maxLong)) {
-                                RestaurantItemItem(
-                                    restaurant = restaurant,
-                                    onItemClick = onItemClick
-                                )
+                            val minLat = currentLocation.latitude - latChange
+                            val maxLat = currentLocation.latitude + latChange
+
+                            val minLong = currentLocation.longitude - longChange
+                            val maxLong = currentLocation.longitude + longChange
+
+                            items(restaurants) { restaurant ->
+                                if (restaurant != null &&
+                                    (restaurant.latitude!! >= minLat) &&
+                                    (restaurant.latitude <= maxLat) &&
+                                    (restaurant.longitude!! >= minLong) &&
+                                    (restaurant.longitude <= maxLong)
+                                ) {
+                                    RestaurantItemItem(
+                                        restaurant = restaurant,
+                                        onItemClick = onItemClick
+                                    )
+                                }
                             }
-                        }
-                        item {
-                            if(restaurants.loadState.append is LoadState.Loading) {
-                                CircularProgressIndicator()
+                            item {
+                                if (restaurants.loadState.append is LoadState.Loading) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
-                }
 
+                }
             }
         }
     }

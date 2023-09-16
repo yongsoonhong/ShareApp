@@ -46,20 +46,38 @@ fun RequestsToYouScreen(
     onAcceptClick: (Request) -> Unit,
     onRejectClick: (Request) -> Unit
 ) {
-    LazyColumn{
-        items(requests){ request ->
-            RequestToYouItemScreen(
-                request = request,
-                itemRequestToYou = itemRequestToYou[request] ,
-                userRequested = userRequested[request],
-                onAcceptClick = {
-                    onAcceptClick(it)
-                },
-                onRejectClick = {
-                    onRejectClick(it)
-                }
+    Column {
+        androidx.compose.material.Text(
+            text = "Request To You",
+            style = androidx.compose.material.MaterialTheme.typography.h5,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(10.dp)
+        )
+        Spacer(modifier = Modifier.padding(8.dp))
+        if(requests.isEmpty()){
+            androidx.compose.material.Text(
+                text = "There's no request from others",
+                style = androidx.compose.material.MaterialTheme.typography.body2,
+                modifier = Modifier.padding(10.dp)
             )
+        } else{
+            LazyColumn {
+                items(requests) { request ->
+                    RequestToYouItemScreen(
+                        request = request,
+                        itemRequestToYou = itemRequestToYou[request],
+                        userRequested = userRequested[request],
+                        onAcceptClick = {
+                            onAcceptClick(it)
+                        },
+                        onRejectClick = {
+                            onRejectClick(it)
+                        }
+                    )
+                }
+            }
         }
+
     }
 }
 
@@ -195,18 +213,38 @@ fun RequestsFromYouScreen(
     userRequested: Map<Request, UserData>,
     onProceedClick: (Request, UserData?) -> Unit
 ) {
-    LazyColumn{
-        items(requests){ request ->
-            RequestFromYouItemScreen(
-                request = request,
-                itemRequestToYou = itemRequestToYou[request] ,
-                userRequested = userRequested[request],
-                onProceedClick = { requestGet, userData ->
-                    onProceedClick(requestGet, userData)
-                }
+
+    Column() {
+        androidx.compose.material.Text(
+            text = "Request To You",
+            style = androidx.compose.material.MaterialTheme.typography.h5,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(10.dp)
+        )
+        Spacer(modifier = Modifier.padding(8.dp))
+        if(requests.isEmpty()){
+            androidx.compose.material.Text(
+                text = "You haven't requested any request yet.",
+                style = androidx.compose.material.MaterialTheme.typography.body2,
+                modifier = Modifier.padding(10.dp)
             )
+        } else{
+            LazyColumn{
+                items(requests){ request ->
+                    RequestFromYouItemScreen(
+                        request = request,
+                        itemRequestToYou = itemRequestToYou[request] ,
+                        userRequested = userRequested[request],
+                        onProceedClick = { requestGet, userData ->
+                            onProceedClick(requestGet, userData)
+                        }
+                    )
+                }
+            }
         }
+
     }
+
 }
 @Composable
 fun RequestFromYouItemScreen(
@@ -298,7 +336,9 @@ fun RequestFromYouItemScreen(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.padding(8.dp).fillMaxWidth()
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
             ) {
                 Text(
                     text = "Status: ${request.status}",

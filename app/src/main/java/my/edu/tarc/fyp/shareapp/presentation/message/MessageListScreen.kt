@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -77,7 +78,13 @@ fun MessageListScreen(
 
         Column {
             TopAppBar(
-                title = { Text(text = "Channels") },
+                title = {
+                    Text(
+                        text = "Channels",
+                        style = MaterialTheme.typography.h5,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(10.dp)
+                    )},
                 actions = {
                     Icon(
                         imageVector = Icons.Default.Add,
@@ -153,18 +160,10 @@ fun ChannelItem(
                 modifier = Modifier
                     .padding(15.dp)
                     .fillMaxHeight(),
-                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = userData?.displayName ?: "Unknown", // Use the user's display name
                     style = MaterialTheme.typography.h6,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "channel.messages[0].body",
-                    fontStyle = FontStyle.Italic,
-                    color = Color.LightGray,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

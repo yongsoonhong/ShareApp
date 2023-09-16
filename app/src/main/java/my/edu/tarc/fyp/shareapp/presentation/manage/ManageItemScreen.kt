@@ -6,12 +6,15 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -21,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -68,37 +72,48 @@ fun ManageItemScreen(
             )
         }
     ) {
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp)
-        ) {
-            if(manageItems.loadState.refresh is LoadState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            } else {
-                SwipeRefresh(state = swipeRefreshState, onRefresh = { onRefresh() }) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        items(manageItems) { manageItem ->
-                            if(manageItem != null && manageItem.userId == Firebase.auth.currentUser?.uid) {
-                                ManageItemItem(
-                                    manageItem = manageItem,
-                                    onItemClick = onItemClick
-                                )
+
+        Column {
+            Text(
+                text = "Food Management Items",
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(10.dp)
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
+            ) {
+                if (manageItems.loadState.refresh is LoadState.Loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    SwipeRefresh(state = swipeRefreshState, onRefresh = { onRefresh() }) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            items(manageItems) { manageItem ->
+                                if (manageItem != null && manageItem.userId == Firebase.auth.currentUser?.uid) {
+                                    ManageItemItem(
+                                        manageItem = manageItem,
+                                        onItemClick = onItemClick
+                                    )
+                                }
                             }
-                        }
-                        item {
-                            if(manageItems.loadState.append is LoadState.Loading) {
-                                CircularProgressIndicator()
+                            item {
+                                if (manageItems.loadState.append is LoadState.Loading) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
-                }
 
+                }
             }
         }
     }

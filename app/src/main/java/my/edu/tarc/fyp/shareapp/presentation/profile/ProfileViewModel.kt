@@ -106,6 +106,13 @@ class ProfileViewModel @Inject constructor(
                     Log.d(TAG, "User profile updated.")
                 }
             }
+
+        db.collection("users")
+            .document(user.uid)
+            .update("displayName", name, "photoUrl", "https://firebasestorage.googleapis.com/v0/b/share-app-87bba.appspot.com/o/images%2F${Firebase.auth.currentUser!!.uid}?alt=media")
+            .addOnFailureListener{
+                Log.d("Update Profile", it.toString())
+            }
     }
 
     fun updatePassword(password: String){

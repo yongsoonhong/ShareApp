@@ -332,10 +332,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 val restaurant by viewModel.restaurant.observeAsState()
                 restaurant?.let {
                     RestaurantItemDetailsScreen(
-                        restaurant = it,
-                        onItemRequestClick = {
-
-                        }
+                        restaurant = it
                     )
                 }
             }
