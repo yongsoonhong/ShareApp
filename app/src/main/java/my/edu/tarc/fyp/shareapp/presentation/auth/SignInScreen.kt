@@ -99,7 +99,10 @@ fun SignInScreen(
                 cursorColor = Color.Black,
                 disabledLabelColor = Color.LightGray, unfocusedIndicatorColor = Color.Transparent,
                 focusedIndicatorColor = Color.Transparent
-            ), shape = RoundedCornerShape(8.dp), singleLine = true, placeholder = {
+            ),
+            shape = RoundedCornerShape(8.dp),
+            singleLine = true,
+            placeholder = {
                 Text(text = "Email")
             }
         )

@@ -216,7 +216,7 @@ fun RequestsFromYouScreen(
 
     Column() {
         androidx.compose.material.Text(
-            text = "Request To You",
+            text = "Request From You",
             style = androidx.compose.material.MaterialTheme.typography.h5,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(10.dp)

@@ -4,9 +4,12 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
@@ -20,6 +23,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
+import my.edu.tarc.fyp.shareapp.presentation.feedback.FARScreen
+import my.edu.tarc.fyp.shareapp.presentation.feedback.FARViewModel
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemAddScreen
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemDetails
 import my.edu.tarc.fyp.shareapp.presentation.manage.ManageItemDetailsScreen
@@ -275,6 +280,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 }
             }
         }
+
         navigation(
             route = "main_restaurant",
             startDestination = "restaurant_list",
@@ -337,6 +343,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 }
             }
         }
+
         navigation(
             route = "main_manage",
             startDestination = "manage_list",
@@ -464,6 +471,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 )
             }
         }
+
         navigation(
             route = "main_message",
             startDestination = "message_list",
@@ -562,6 +570,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                             viewModel.clearCurrentItemRequestsFromUser()
                             viewModel.getCurrentRequestFromUser(userData!!.uid)
                             viewModel.getCurrentRequestToUser(userData.uid)
+                        },
+                        onFARClick = {
+                            navController.navigate("feedback_user/${it}")
                         }
                     )
                 } else {
@@ -585,6 +596,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
 
 
         }
+
         navigation(
             route = "main_profile",
             startDestination = "profile_home",
@@ -615,6 +627,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     },
                     onRequestToYouClick = {
                         navController.navigate("profile_requestToYou")
+                    },
+                    onFARClick = {
+                        navController.navigate("feedback_user/${Firebase.auth.currentUser!!.uid}")
                     }
                 )
             }
@@ -673,6 +688,7 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 )
 
             }
+
             composable("profile_requestToYou"){
                 val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
 
@@ -700,6 +716,48 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
 
             }
         }
-    }
 
+        navigation(
+            route = "feedback",
+            startDestination = "feedback_user",
+        ){
+            composable(
+                route = "feedback_user/{uid}",
+                arguments = listOf(navArgument("uid") {
+                    type = NavType.StringType
+                })
+            ){ navBackStackEntry ->
+
+                val userToDisplayUid = navBackStackEntry.arguments?.getString("uid")
+
+                val viewModel = navBackStackEntry.sharedViewModel<FARViewModel>(navController = navController)
+                val userToDisplay by viewModel.userToDisplay.collectAsState()
+                val star by viewModel.star.collectAsState()
+                val reviewBody by viewModel.reviewBody.collectAsState()
+                val isReviewWritten by viewModel.isReviewWritten.collectAsState()
+
+                LaunchedEffect(userToDisplayUid){
+                    userToDisplayUid?.let {
+                        viewModel.getUserToDisplay(it)
+                    }
+                }
+
+                Log.d("isReviewWritten", isReviewWritten.toString())
+                Log.d("star", star.toString())
+                Log.d("reviewBody", reviewBody)
+
+
+                FARScreen(
+                    user = userToDisplay,
+                    onSendReviewClick = { starGet, body, uid ->
+                        viewModel.sendReview(starGet, body, uid)
+                        viewModel.getUserToDisplay(uid)
+                    },
+                    star = star,
+                    body = reviewBody,
+                    isReviewWritten = isReviewWritten
+                )
+            }
+        }
+    }
 }

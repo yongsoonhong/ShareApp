@@ -46,6 +46,7 @@ fun ProfileScreen(
     onChangePasswordClick: () -> Unit,
     onRequestToYouClick: () -> Unit,
     onRequestFromYouClick: () -> Unit,
+    onFARClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ){
     val user = viewModel.getCurrentUser()
@@ -98,6 +99,24 @@ fun ProfileScreen(
         )
 
         Spacer(modifier = Modifier.padding(5.dp))
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+                .height(200.dp)
+                .clickable {
+                    onFARClick()
+                },
+            shape = RoundedCornerShape(8.dp),
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.requestfromyou),
+                contentDescription = "FAR",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
 
         Row(
             modifier = Modifier

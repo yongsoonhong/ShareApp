@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -162,7 +163,7 @@ fun ChannelItem(
                     .fillMaxHeight(),
             ) {
                 Text(
-                    text = userData?.displayName ?: "Unknown", // Use the user's display name
+                    text = userData?.displayName?: "Unknown", // Use the user's display name
                     style = MaterialTheme.typography.h6,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -187,13 +188,12 @@ fun ChatRoomScreen(
     onItemAcceptClick: (Request) -> Unit,
     onItemDeclineClick: (Request) -> Unit,
     onItemDeleteClick: (Request) -> Unit,
+    onFARClick: (String?)-> Unit
     ) {
 
     var showSharedItem by remember { mutableStateOf(false) }
     var showSharedItemDetails by remember { mutableStateOf<SharedItem?>(null) }
-
     var showRequest by remember { mutableStateOf(false) }
-
 
 
     Column(
@@ -214,7 +214,27 @@ fun ChatRoomScreen(
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                Text(text = userData?.displayName ?: "Unknown")
+                Box(modifier = Modifier.clickable {
+                    onFARClick(userData?.uid)
+                }){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        AsyncImage(
+                            model = userData?.photoUrl ?: R.drawable.baseline_person_24,
+                            contentDescription = "user profile pic",
+                            modifier = Modifier.size(50.dp).clip(CircleShape)
+                        )
+
+                        Text(
+                            text = userData?.displayName ?: "Unknown",
+                            style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+
                 IconButton(onClick = {
                     showRequest = showRequest.not()
                 }) {

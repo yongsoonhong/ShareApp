@@ -91,13 +91,16 @@ class ProfileViewModel @Inject constructor(
 
     fun updateUserProfile(name: String, photoUrl: String){
 
+        val imgFileName = UUID.randomUUID().toString()
+
+
         viewModelScope.launch{
-            uploadImagesToStorage(Firebase.auth.currentUser!!.uid, photoUrl)
+            uploadImagesToStorage(imgFileName, photoUrl)
         }
 
         val profileUpdates = userProfileChangeRequest {
             displayName = name
-            photoUri = Uri.parse("https://firebasestorage.googleapis.com/v0/b/share-app-87bba.appspot.com/o/images%2F${Firebase.auth.currentUser!!.uid}?alt=media")
+            photoUri = Uri.parse("https://firebasestorage.googleapis.com/v0/b/share-app-87bba.appspot.com/o/images%2F${imgFileName}?alt=media")
         }
 
         user!!.updateProfile(profileUpdates)
@@ -109,7 +112,7 @@ class ProfileViewModel @Inject constructor(
 
         db.collection("users")
             .document(user.uid)
-            .update("displayName", name, "photoUrl", "https://firebasestorage.googleapis.com/v0/b/share-app-87bba.appspot.com/o/images%2F${Firebase.auth.currentUser!!.uid}?alt=media")
+            .update("displayName", name, "photoUrl", "https://firebasestorage.googleapis.com/v0/b/share-app-87bba.appspot.com/o/images%2F${imgFileName}?alt=media")
             .addOnFailureListener{
                 Log.d("Update Profile", it.toString())
             }
@@ -259,7 +262,7 @@ class ProfileViewModel @Inject constructor(
                 }
             }
             .addOnFailureListener { e ->
-                e?.let {
+                e.let {
                     Log.w(TAG, "Listen failed.", e)
                 }
             }
@@ -287,7 +290,7 @@ class ProfileViewModel @Inject constructor(
                 }
             }
             .addOnFailureListener { e ->
-                e?.let {
+                e.let {
                     Log.w(TAG, "Listen failed.", e)
                 }
             }
