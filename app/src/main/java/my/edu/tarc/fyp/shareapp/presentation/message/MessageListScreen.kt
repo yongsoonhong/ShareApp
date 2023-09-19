@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -188,8 +191,9 @@ fun ChatRoomScreen(
     onItemAcceptClick: (Request) -> Unit,
     onItemDeclineClick: (Request) -> Unit,
     onItemDeleteClick: (Request) -> Unit,
-    onFARClick: (String?)-> Unit
-    ) {
+    onFARClick: (String?)-> Unit,
+    onDeleteMessageClick: (String, String, Boolean) -> Unit
+) {
 
     var showSharedItem by remember { mutableStateOf(false) }
     var showSharedItemDetails by remember { mutableStateOf<SharedItem?>(null) }
@@ -251,7 +255,12 @@ fun ChatRoomScreen(
             reverseLayout = true
         ) {
             items(messages) { message ->
-                MessageItem(message = message)
+                MessageItem(
+                    message = message,
+                    onDeleteMessageClick = { messageId, deleteBoth ->
+                        onDeleteMessageClick(userData!!.uid, messageId, deleteBoth)
+                    }
+                )
             }
         }
         
@@ -618,8 +627,13 @@ fun RequestItemTo(
 
 
 @Composable
-fun MessageItem(message: Message) {
+fun MessageItem(
+    message: Message,
+    onDeleteMessageClick: (String, Boolean) -> Unit
+) {
     val alignment = if (message.from == "0") Alignment.BottomEnd else Alignment.BottomStart
+
+    var showDialog by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -631,11 +645,54 @@ fun MessageItem(message: Message) {
             shape = RoundedCornerShape(8.dp),
             backgroundColor = if (message.from == "0") Color.Gray else Color.Blue,
             modifier = Modifier.padding(4.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(onLongPress = {
+                        showDialog = true
+                    })
+                }
         ) {
             Text(
                 text = message.body,
                 modifier = Modifier.padding(8.dp),
                 color = Color.White
+            )
+        }
+
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(text = "Confirmation") },
+                text = { Text("Do you want to delete this message?") },
+                confirmButton = {
+                    if (message.from == "0") {
+                        Button(onClick = {
+                            onDeleteMessageClick(message.messageId, false)
+                            showDialog = false
+                        }) {
+                            Text("Delete on your side only")
+                        }
+                        Button(onClick = {
+                            onDeleteMessageClick(message.messageId, true)
+                            showDialog = false
+                        }) {
+                            Text("Delete for both side")
+                        }
+                    }else{
+                        Button(onClick = {
+                            onDeleteMessageClick(message.messageId, false)
+                            showDialog = false
+                        }) {
+                            Text("Delete on your side only")
+                        }
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        showDialog = false
+                    }) {
+                        Text("Cancel")
+                    }
+                }
             )
         }
     }

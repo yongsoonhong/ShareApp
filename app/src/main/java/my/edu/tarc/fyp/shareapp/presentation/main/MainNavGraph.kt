@@ -584,6 +584,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                         },
                         onFARClick = {
                             navController.navigate("feedback_user/${it}")
+                        },
+                        onDeleteMessageClick = { uidGet, messageIdGet, deleteBoth->
+                            viewModel.deleteMessage(uidGet, messageIdGet, deleteBoth)
                         }
                     )
                 } else {

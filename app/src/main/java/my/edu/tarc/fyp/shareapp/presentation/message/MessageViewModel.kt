@@ -296,6 +296,7 @@ class MessageViewModel @Inject constructor(
 
 
 
+
     fun clearCurrentItemRequestsToUser() {
         _currentItemRequestsToUser.value = mapOf()
     }
@@ -513,6 +514,19 @@ class MessageViewModel @Inject constructor(
     }
 
 
+    fun deleteMessage(uid: String, messageId: String, deleteBoth: Boolean){
+        val channelIdThisUser = getCombinedId(Firebase.auth.currentUser!!.uid, uid)
+        val channelIdOtherUser = getCombinedId(uid, Firebase.auth.currentUser!!.uid)
+
+        if (deleteBoth){
+            db.collection("channels").document(channelIdOtherUser).collection("messages").document(messageId)
+                .delete()
+        }
+        db.collection("channels").document(channelIdThisUser).collection("messages").document(messageId)
+            .delete()
+
+
+    }
 
 
 }
