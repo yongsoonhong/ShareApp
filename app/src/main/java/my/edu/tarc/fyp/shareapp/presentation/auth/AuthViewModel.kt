@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -102,7 +103,9 @@ class AuthViewModel @Inject constructor(
         authRepository.registerUser(email, password).collect{ result ->
             when(result){
                 is Resource.Success -> {
-                    _signUpState.send(SignUpState(isSuccess = "Sign In Success"))
+                    db.collection("reports").document("totaluser")
+                        .update("no",FieldValue.increment(1))
+                    _signUpState.send(SignUpState(isSuccess = "Sign Up Success"))
                 }
 
                 is Resource.Loading -> {

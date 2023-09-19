@@ -2,13 +2,17 @@ package my.edu.tarc.fyp.shareapp.presentation.profile
 
 import android.content.ContentValues.TAG
 import android.net.Uri
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.auth.ktx.userProfileChangeRequest
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -25,6 +29,8 @@ import my.edu.tarc.fyp.shareapp.domain.Message
 import my.edu.tarc.fyp.shareapp.domain.Request
 import my.edu.tarc.fyp.shareapp.domain.SharedItem
 import my.edu.tarc.fyp.shareapp.domain.UserData
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 
@@ -321,6 +327,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     //Accept or Reject the request from other
+    @RequiresApi(Build.VERSION_CODES.O)
     fun acceptRequest(request: Request){
 
         val userRequestIdFrom = "${request.fromUid}request"
@@ -339,6 +346,16 @@ class ProfileViewModel @Inject constructor(
             .collection("requestto")
             .document(request.requestId)
             .delete()
+
+        db.collection("reports").document("totaldonation")
+            .update("no", FieldValue.increment(1))
+
+        val currentDate = LocalDate.now()
+
+        val donationMonthId = "donation${currentDate.format(DateTimeFormatter.ofPattern("yyyyMM"))}"
+
+        db.collection("reports").document(donationMonthId)
+            .set(mapOf("no" to FieldValue.increment(1)), SetOptions.merge())
 
         val newMsgTo = Message(
             body = "You have accepted a request from this user",

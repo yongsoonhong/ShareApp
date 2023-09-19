@@ -3,6 +3,7 @@ package my.edu.tarc.fyp.shareapp.data
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -77,6 +78,8 @@ class AuthRepositoryImpl @Inject constructor(
                 if (!document.exists()) {
                     // Store new user data in Firestore
                     userRef.set(userData).await()
+                    firestore.collection("reports").document("totaluser")
+                        .update("no", FieldValue.increment(1))
                 }
             }
             emit(Resource.Success(result))
