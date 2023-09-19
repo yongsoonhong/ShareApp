@@ -234,7 +234,7 @@ class ProfileViewModel @Inject constructor(
                 }
             }
             .addOnFailureListener { e ->
-                e?.let {
+                e.let {
                     Log.w(TAG, "Listen failed.", e)
                 }
             }

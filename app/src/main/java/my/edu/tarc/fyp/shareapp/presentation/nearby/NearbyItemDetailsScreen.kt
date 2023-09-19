@@ -1,6 +1,7 @@
 package my.edu.tarc.fyp.shareapp.presentation.nearby
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import my.edu.tarc.fyp.shareapp.domain.UserData
 fun NearbyItemDetailsScreen(
     sharedItem: SharedItem,
     onItemRequestClick: () -> Unit,
+    onFARClick: (String) -> Unit,
     userData: UserData?
 ){
 
@@ -56,7 +58,8 @@ fun NearbyItemDetailsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(300.dp)
-                    .background(Color.Gray),
+                    .background(Color.Gray)
+                    .clip(CircleShape)
             )
         }
         Column(
@@ -66,7 +69,10 @@ fun NearbyItemDetailsScreen(
         ) {
             if (userData != null) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.clickable {
+                        onFARClick(userData.uid)
+                    }
                 ) {
                     userData.photoUrl?.let {
                         AsyncImage(

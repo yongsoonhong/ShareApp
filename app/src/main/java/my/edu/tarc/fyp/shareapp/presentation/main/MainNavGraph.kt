@@ -131,6 +131,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                             viewModel.addRequest(sharedItemId!!,userData!!.uid)
                             navController.navigate("message_room/${Firebase.auth.currentUser!!.uid}-${data.uid}")
                         },
+                        onFARClick = {
+                            navController.navigate("feedback_user/${it}")
+                        },
                         userData = data
                     )
                 }
@@ -735,16 +738,14 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                 val star by viewModel.star.collectAsState()
                 val reviewBody by viewModel.reviewBody.collectAsState()
                 val isReviewWritten by viewModel.isReviewWritten.collectAsState()
+                val reviews by viewModel.userReviewsToDisplay.collectAsState()
+                val aveStar by viewModel.aveStar.collectAsState()
 
                 LaunchedEffect(userToDisplayUid){
                     userToDisplayUid?.let {
                         viewModel.getUserToDisplay(it)
                     }
                 }
-
-                Log.d("isReviewWritten", isReviewWritten.toString())
-                Log.d("star", star.toString())
-                Log.d("reviewBody", reviewBody)
 
 
                 FARScreen(
@@ -755,7 +756,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     },
                     star = star,
                     body = reviewBody,
-                    isReviewWritten = isReviewWritten
+                    isReviewWritten = isReviewWritten,
+                    reviews = reviews,
+                    aveStar = aveStar
                 )
             }
         }

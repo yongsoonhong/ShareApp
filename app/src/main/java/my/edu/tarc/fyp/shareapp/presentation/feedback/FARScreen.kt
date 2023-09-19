@@ -37,11 +37,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.fyp.shareapp.R
+import my.edu.tarc.fyp.shareapp.domain.Review
 import my.edu.tarc.fyp.shareapp.domain.UserData
+import java.util.Calendar
+import java.util.Date
+import java.util.concurrent.TimeUnit
 
 @Composable
 fun FARScreen(
@@ -49,6 +54,8 @@ fun FARScreen(
     isReviewWritten: Boolean,
     star: Int,
     body: String,
+    reviews: Map<Review,UserData>,
+    aveStar: Double,
     onSendReviewClick: (Int, String, String) -> Unit
 ) {
 
@@ -110,7 +117,7 @@ fun FARScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = "5.0",
+                        text = String.format("%.1f", aveStar),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )
@@ -143,7 +150,9 @@ fun FARScreen(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth().padding(20.dp,0.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp, 0.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
@@ -291,10 +300,23 @@ fun FARScreen(
                 modifier = Modifier.padding(10.dp)
             )
             LazyColumn {
-                //TODO get feedback and user...
-                items(listOf(user, user, user, user)){
-                    FeedbackItem(user = user)
+                if (reviews.toList().isEmpty()){
+                    item {
+                        Spacer(modifier = Modifier.padding(8.dp))
+                        Text(text = "No Review from others")
+                    }
+                } else if(reviews.toList()[0].second.uid == Firebase.auth.uid && reviews.toList().size == 1){
+                    item {
+                        Text(text = "No Review from others", modifier = Modifier.padding(10.dp))
+                    }
+                } else{
+                    items(reviews.toList()){ review ->
+                        if (review.second.uid != Firebase.auth.currentUser!!.uid){
+                            FeedbackItem(review = review.first,user = review.second)
+                        }
+                    }
                 }
+
             }
         }
 
@@ -305,7 +327,62 @@ fun FARScreen(
 
 
 @Composable
-fun FeedbackItem(user: UserData){
+fun FeedbackItem(review: Review, user: UserData){
+    fun yearsBetweenDates(d1: Date, d2: Date): Long {
+        val calendar = Calendar.getInstance()
+
+        calendar.time = d1
+        val year1 = calendar.get(Calendar.YEAR)
+
+        calendar.time = d2
+        val year2 = calendar.get(Calendar.YEAR)
+
+        return (year1 - year2).toLong()
+    }
+
+    fun monthsBetweenDates(d1: Date, d2: Date): Long {
+        val calendar = Calendar.getInstance()
+
+        calendar.time = d1
+        val year1 = calendar.get(Calendar.YEAR)
+        val month1 = calendar.get(Calendar.MONTH)
+
+        calendar.time = d2
+        val year2 = calendar.get(Calendar.YEAR)
+        val month2 = calendar.get(Calendar.MONTH)
+
+        return (((year1 * 12) + month1) - ((year2 * 12) + month2)).toLong()
+    }
+
+    fun timestampToTimeAgo(timestamp: Timestamp): String {
+        val timestampDate = timestamp.toDate()
+        val currentDate = Date()
+
+        val differenceInMillis = currentDate.time - timestampDate.time
+
+        // Get days, months, and years difference
+        val daysDifference = TimeUnit.MILLISECONDS.toDays(differenceInMillis)
+        val yearsDifference = yearsBetweenDates(currentDate, timestampDate)
+        val monthsDifference = monthsBetweenDates(currentDate, timestampDate)
+
+        return when {
+            yearsDifference > 0 -> when (yearsDifference) {
+                1L -> "1 year ago"
+                else -> "$yearsDifference years ago"
+            }
+            monthsDifference > 0 -> when (monthsDifference) {
+                1L -> "1 month ago"
+                else -> "$monthsDifference months ago"
+            }
+            daysDifference == 0L -> "Today"
+            daysDifference == 1L -> "1 day ago"
+            else -> "$daysDifference days ago"
+        }
+    }
+
+
+
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -340,13 +417,13 @@ fun FeedbackItem(user: UserData){
                     )
                     Spacer(modifier = Modifier.padding(2.dp))
                     Text(
-                        text = "1 days ago",
+                        text = timestampToTimeAgo(review.timestamp),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )
                 }
                 Text(
-                    text = "Feedback to this User display here",
+                    text = review.body?:"",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
