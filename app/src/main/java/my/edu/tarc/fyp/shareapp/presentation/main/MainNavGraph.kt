@@ -4,12 +4,9 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.net.toUri
 import androidx.navigation.NavGraphBuilder
@@ -44,6 +41,7 @@ import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileViewModel
 import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsFromYouScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsToYouScreen
+import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantApplicationFormScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemDetailsScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantItemViewModel
@@ -108,7 +106,6 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     navBackStackEntry ->
                 val viewModel: NearbyItemViewModel = navBackStackEntry.sharedViewModel(navController = navController)
                 val sharedItemId = navBackStackEntry.arguments?.getString("sharedItemId")
-                val coroutineScope = rememberCoroutineScope()
 
                 sharedItemId?.let { id ->
                     viewModel.getItemById(id)
@@ -323,6 +320,9 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     onUserLocationChange = { latlng ->
                         viewModel.currentUserLocation = latlng
                     },
+                    onJoinClick = {
+                        navController.navigate("restaurant_application_form")
+                    },
                     currentLocation = viewModel.currentUserLocation
                 )
             }
@@ -335,7 +335,6 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     navBackStackEntry ->
                 val viewModel: RestaurantItemViewModel = navBackStackEntry.sharedViewModel(navController = navController)
                 val restaurantId = navBackStackEntry.arguments?.getString("restaurantId")
-                val coroutineScope = rememberCoroutineScope()
 
                 if (restaurantId != null) {
                     Log.d("Restaurant",restaurantId)
@@ -352,6 +351,20 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                         restaurant = it
                     )
                 }
+            }
+
+            composable("restaurant_application_form"){
+                val viewModel = it.sharedViewModel<RestaurantItemViewModel>(navController = navController)
+
+                RestaurantApplicationFormScreen(
+                    onSaveClick = { uri, name, address, start, end, desc, lat, lng ->
+                        viewModel.addRestaurantApplication(uri, name, address, start, end, desc, lat, lng)
+                        navController.popBackStack()
+                    },
+                    onCancelClick = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
 

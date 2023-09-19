@@ -1,15 +1,21 @@
 package my.edu.tarc.fyp.shareapp.presentation.auth
 
+import android.content.ContentValues
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import my.edu.tarc.fyp.shareapp.data.AuthRepository
+import my.edu.tarc.fyp.shareapp.domain.UserData
 import my.edu.tarc.fyp.shareapp.util.Resource
 import javax.inject.Inject
 
@@ -18,6 +24,8 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ): ViewModel() {
+
+    val db = Firebase.firestore
 
     //SignInWithEmail
     private val _signInState = Channel<SignInState>()
@@ -54,7 +62,30 @@ class AuthViewModel @Inject constructor(
         authRepository.loginUser(email, password).collect{ result ->
             when(result){
                 is Resource.Success -> {
-                    _signInState.send(SignInState(isSuccess = "Sign In Success"))
+
+                    var userExist = false
+
+                    db.collection("users")
+                        .whereEqualTo("email",email)
+                        .get()
+                        .addOnSuccessListener { value ->
+                            if (!value.isEmpty){
+                                userExist = true
+
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            e.let {
+                                Log.w(ContentValues.TAG, "Listen failed.", e)
+                            }
+                        }.await()
+
+                    if (userExist){
+                        _signInState.send(SignInState(isSuccess = "Sign In Success"))
+                    }else{
+                        _signInState.send(SignInState(isError = "Account have been removed"))
+                    }
+
                 }
 
                 is Resource.Loading -> {

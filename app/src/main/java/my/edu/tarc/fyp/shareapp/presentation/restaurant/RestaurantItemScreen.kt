@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
@@ -18,6 +20,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,6 +59,7 @@ fun RestaurantItemScreen(
     isLoading: Boolean,
     onItemClick: (Restaurant) -> Unit,
     onAddClick: () -> Unit,
+    onJoinClick: () -> Unit,
     restaurants: LazyPagingItems<Restaurant>
 ) {
     val permissions = listOf(
@@ -96,6 +101,7 @@ fun RestaurantItemScreen(
             isLoading = isLoading,
             onItemClick = onItemClick,
             onAddClick = onAddClick,
+            onJoinClick = onJoinClick,
             restaurants = restaurants
         )
     }
@@ -109,6 +115,7 @@ fun RestaurantItemScreenBody(
     isLoading: Boolean,
     onItemClick: (Restaurant) -> Unit,
     onAddClick: () -> Unit,
+    onJoinClick: () -> Unit,
     restaurants: LazyPagingItems<Restaurant>
 ) {
 
@@ -128,13 +135,31 @@ fun RestaurantItemScreenBody(
     Scaffold (
     ) {
 
-        Column {
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Text(
                 text = "Restaurants",
                 style = MaterialTheme.typography.h5,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(10.dp)
             )
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            OutlinedButton(
+                onClick = {
+                    onJoinClick()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                androidx.compose.material3.Text(
+                    text = "Join our platform now!",
+                    color = Color.Black
+                )
+            }
+
             Spacer(modifier = Modifier.padding(8.dp))
 
             Box(

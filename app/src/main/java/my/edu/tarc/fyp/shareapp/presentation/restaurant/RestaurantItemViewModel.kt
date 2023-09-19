@@ -17,15 +17,20 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import my.edu.tarc.fyp.shareapp.domain.Restaurant
 import my.edu.tarc.fyp.shareapp.domain.SharedItem
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 import javax.inject.Inject
 import kotlin.reflect.full.memberProperties
 
@@ -49,9 +54,44 @@ class RestaurantItemViewModel @Inject constructor(
     }
 
 
+    fun addRestaurantApplication( uri: Uri, name: String, address: String, start: String, end: String, desc: String, lat: Double, lng: Double){
+
+        val id = UUID.randomUUID().toString()
+        val filename = UUID.randomUUID().toString()
+
+
+        uploadImagesToStorage(filename, uri)
+
+        val restaurant = Restaurant(
+            restaurantId = id,
+            restaurantName= name,
+            pickUpStartTime = start,
+            pickUpEndTime = end,
+            address= address,
+            description = desc,
+            noLike = 0,
+            noView = 0,
+            imageUrl = "https://firebasestorage.googleapis.com/v0/b/share-app-87bba.appspot.com/o/images%2F$filename?alt=media",
+            longitude = lat,
+            latitude = lng
+        )
+
+
+        db.collection("restaurantapplications").document(id)
+            .set(restaurant)
+
+        db.collection("restaurantapplications").document(id)
+            .update("status","Pending")
+
+    }
+    private  fun uploadImagesToStorage(filename: String, imageUri: Uri){
+
+        val imageRef = Firebase.storage.reference.child("images")
+        imageRef.child(filename).putFile(imageUri)
 
 
 
+    }
 
     private val _restaurant = MutableLiveData<Restaurant?>()
     val restaurant: LiveData<Restaurant?> get() = _restaurant
