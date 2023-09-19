@@ -182,6 +182,7 @@ fun NearbyItemScreenBody(
 
                             items(sharedItems) { sharedItem ->
                                 if((sharedItem != null) &&
+                                    sharedItem.noLike == 0 &&
                                     (sharedItem.userId != Firebase.auth.currentUser?.uid) &&
                                     (sharedItem.latitude!! >= minLat) &&
                                     (sharedItem.latitude <= maxLat) &&

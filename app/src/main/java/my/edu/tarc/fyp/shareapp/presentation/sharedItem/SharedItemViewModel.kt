@@ -137,6 +137,33 @@ class SharedItemViewModel @Inject constructor(
 
     }
 
+    fun stopSharingItem(id: String){
+
+        db.collection("shareditems").document(id)
+            .update("noLike",1)
+            .addOnSuccessListener {
+                Log.d(
+                    TAG,
+                    "DocumentSnapshot successfully written!"
+                )
+                clearSharedItemDetails()
+            }
+            .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+    }
+
+    fun startSharingItem(id: String){
+        db.collection("shareditems").document(id)
+            .update("noLike",0)
+            .addOnSuccessListener {
+                Log.d(
+                    TAG,
+                    "DocumentSnapshot successfully written!"
+                )
+                clearSharedItemDetails()
+            }
+            .addOnFailureListener { e -> Log.w(TAG, "Error writing document", e) }
+    }
+
     fun saveSharedItem() {
         if (validateInput()) {
             val imageUri = sharedItemUiState.itemDetails.imageUri
@@ -168,7 +195,7 @@ class SharedItemViewModel @Inject constructor(
 
     }
 
-    fun clearSharedItemDetails(){
+    private fun clearSharedItemDetails(){
         updateUiState(SharedItemDetails(
             title = "",
             description = "",

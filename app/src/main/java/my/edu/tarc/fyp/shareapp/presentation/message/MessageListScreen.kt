@@ -264,12 +264,15 @@ fun ChatRoomScreen(
             ){
                 LazyRow(){
                    items(sharedItems){ item ->
-                        UserSharedItemItem(
-                            sharedItem = item,
-                            onItemClick = {
-                                showSharedItemDetails = it
-                            }
-                        )
+                       if (item.noLike == 0){
+                           UserSharedItemItem(
+                               sharedItem = item,
+                               onItemClick = {
+                                   showSharedItemDetails = it
+                               }
+                           )
+                       }
+
                    }
                 }
             }

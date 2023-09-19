@@ -97,7 +97,23 @@ fun SharedItemScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             items(sharedItems) { sharedItem ->
-                                if (sharedItem != null && sharedItem.userId == Firebase.auth.currentUser?.uid) {
+                                if (sharedItem != null && sharedItem.userId == Firebase.auth.currentUser?.uid && sharedItem.noLike == 0) {
+                                    SharedItemItem(
+                                        sharedItem = sharedItem,
+                                        onItemClick = onItemClick
+                                    )
+                                }
+                            }
+                            item {
+                                Text(
+                                    text = "Items Stopped Sharing",
+                                    style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(10.dp)
+                                )
+                            }
+                            items(sharedItems) { sharedItem ->
+                                if (sharedItem != null && sharedItem.userId == Firebase.auth.currentUser?.uid && sharedItem.noLike == 1) {
                                     SharedItemItem(
                                         sharedItem = sharedItem,
                                         onItemClick = onItemClick

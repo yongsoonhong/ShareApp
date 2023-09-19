@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -26,8 +27,10 @@ import my.edu.tarc.fyp.shareapp.domain.SharedItem
 fun SharedItemDetailsScreen(
     sharedItem: SharedItem,
     onItemEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
+    onDeleteClick: () -> Unit,
+    onStartSharingClick: (String) -> Unit,
+    onStopSharingClick: (String) -> Unit
+    ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,6 +113,28 @@ fun SharedItemDetailsScreen(
             ) {
                 androidx.compose.material.Text(text = "Edit")
             }
+            if (sharedItem.noLike == 0){
+                Button(
+                    shape = RectangleShape,
+
+                    modifier = Modifier
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                    onClick = { onStopSharingClick(sharedItem.sharedItemId!!)  }
+                ) {
+                    androidx.compose.material.Text(text = "Stop Sharing")
+                }
+            }else{
+                Button(
+                    shape = RectangleShape,
+                    modifier = Modifier
+                        .weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Green),
+                    onClick = { onStartSharingClick(sharedItem.sharedItemId!!)  }
+                ) {
+                    androidx.compose.material.Text(text = "Start Sharing")
+                }
+            }
             Button(
                 shape = RoundedCornerShape(0.dp,10.dp,10.dp,0.dp),
                 modifier = Modifier
@@ -120,7 +145,6 @@ fun SharedItemDetailsScreen(
                 androidx.compose.material.Text(text = "Delete")
             }
         }
-
 
     }
 

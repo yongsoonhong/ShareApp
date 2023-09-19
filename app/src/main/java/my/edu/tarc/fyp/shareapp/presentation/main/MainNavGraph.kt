@@ -212,6 +212,14 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                                 viewModel.updateUiState(sharedItemDetails)
 
                                 navController.navigate("shared_edit/${sharedItemId}")
+                            },
+                            onStartSharingClick = { idGet ->
+                                viewModel.startSharingItem(idGet)
+                                navController.popBackStack()
+                            },
+                            onStopSharingClick = { idGet ->
+                                viewModel.stopSharingItem(idGet)
+                                navController.popBackStack()
                             }
                         )
                     }

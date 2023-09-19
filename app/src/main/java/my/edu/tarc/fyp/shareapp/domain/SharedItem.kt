@@ -7,10 +7,10 @@ data class SharedItem(
     val dateAdded: String? = null,
     val longitude: Double? = null,
     val latitude: Double? = null,
-    val noLike: Int? = null,
+    val noLike: Int? = 0,
     val noView: Int? = null,
     val userId: String? = null,
     var imageUrl: String? = null
 ) {
-    constructor() : this(null, "", "", null, null, null, null, null, null, null)
+    constructor() : this(null, "", "", null, null, null, 0, null, null, null)
 }
