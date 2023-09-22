@@ -667,7 +667,6 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
 
             composable("profile_report"){
                 val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
-
                 val report by viewModel.report.collectAsState()
 
                 ReportScreen(report = report)

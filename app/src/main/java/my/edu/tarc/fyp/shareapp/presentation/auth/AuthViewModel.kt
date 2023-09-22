@@ -47,9 +47,7 @@ class AuthViewModel @Inject constructor(
     val googleState: State<GoogleSignInState> = _googleState
 
     fun getToken(){
-
         var token: String? = null
-
         FirebaseMessaging.getInstance().token.addOnCompleteListener(
             OnCompleteListener { task ->
                 if (!task.isSuccessful) {

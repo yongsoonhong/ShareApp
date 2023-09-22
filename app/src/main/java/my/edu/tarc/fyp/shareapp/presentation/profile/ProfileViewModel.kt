@@ -428,7 +428,6 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun rejectRequest(request: Request){
-
         val userRequestIdFrom = "${request.fromUid}request"
         val userRequestIdTo = "${request.toUid}request"
 
