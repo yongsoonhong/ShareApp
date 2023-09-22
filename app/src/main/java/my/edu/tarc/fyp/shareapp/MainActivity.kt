@@ -50,19 +50,20 @@ const val TOPIC = "/topics/myTopic"
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    val TAG = "MainActivity"
 
     companion object {
         fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
             try {
+                Log.d(TAG, "sending")
+
                 val response = RetrofitInstance.api.postNotification(notification)
                 if (response.isSuccessful){
-                    Log.d(TAG, "Response: ${Gson().toJson(response)}")
                 }else{
-                    Log.e(TAG, response.errorBody().toString())
+                    val errorContent = response.errorBody()?.string()
+                    Log.e("response", "Error: $errorContent")
                 }
             }catch (e: Exception){
-                Log.e(TAG, e.toString())
+                Log.e("exception", e.toString())
             }
         }
     }

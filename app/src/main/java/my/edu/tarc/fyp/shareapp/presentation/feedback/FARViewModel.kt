@@ -125,6 +125,7 @@ class FARViewModel @Inject constructor(
                     it.toObject(Review::class.java)
                 }?.forEach { review ->
                     calStar += review.star
+                    noOfReview ++
                     getUserReviewToDisplay(review)
                 }
 
