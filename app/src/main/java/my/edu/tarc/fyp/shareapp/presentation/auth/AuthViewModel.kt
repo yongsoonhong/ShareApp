@@ -1,20 +1,26 @@
 package my.edu.tarc.fyp.shareapp.presentation.auth
 
 import android.content.ContentValues
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import my.edu.tarc.fyp.shareapp.MyFirebaseMessagingService
 import my.edu.tarc.fyp.shareapp.data.AuthRepository
 import my.edu.tarc.fyp.shareapp.domain.UserData
 import my.edu.tarc.fyp.shareapp.util.Resource
@@ -40,11 +46,30 @@ class AuthViewModel @Inject constructor(
     private val _googleState = mutableStateOf(GoogleSignInState())
     val googleState: State<GoogleSignInState> = _googleState
 
+    fun getToken(){
+
+        var token: String? = null
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(
+            OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w(ContentValues.TAG, "Fetching FCM registration token failed", task.exception)
+                    return@OnCompleteListener
+                }
+                // Get the token
+                token = task.result
+                MyFirebaseMessagingService.token = token
+                db.collection("usertoken").document("${Firebase.auth.currentUser!!.uid}token")
+                    .set(mapOf("token" to token), SetOptions.merge())
+            })
+    }
+
     fun googleSignIn(credential: AuthCredential) = viewModelScope.launch {
         authRepository.googleSignIn(credential).collect { result ->
             when (result) {
                 is Resource.Success -> {
                     _googleState.value = GoogleSignInState(success = result.data)
+
                 }
                 is Resource.Loading -> {
                     _googleState.value = GoogleSignInState(loading = true)
@@ -83,6 +108,9 @@ class AuthViewModel @Inject constructor(
 
                     if (userExist){
                         _signInState.send(SignInState(isSuccess = "Sign In Success"))
+
+
+
                     }else{
                         _signInState.send(SignInState(isError = "Account have been removed"))
                     }

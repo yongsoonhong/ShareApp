@@ -191,6 +191,7 @@ fun SignInScreen(
                     if (state.value?.isSuccess?.isNotEmpty() == true) {
                         val success = state.value?.isSuccess
                         Toast.makeText(context, "$success", Toast.LENGTH_LONG).show()
+                        viewModel.getToken()
                         signInSuccess()
                     }
                 }
@@ -209,6 +210,7 @@ fun SignInScreen(
                 scope.launch {
                     if (googleSignInState.success != null) {
                         Toast.makeText(context, "Sign In Success", Toast.LENGTH_LONG).show()
+                        viewModel.getToken()
                         signInSuccess()
                     }
                 }

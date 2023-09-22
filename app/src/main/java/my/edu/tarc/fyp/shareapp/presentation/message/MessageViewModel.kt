@@ -19,8 +19,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
+import my.edu.tarc.fyp.shareapp.MainActivity
 import my.edu.tarc.fyp.shareapp.domain.Channel
 import my.edu.tarc.fyp.shareapp.domain.Message
+import my.edu.tarc.fyp.shareapp.domain.NotificationData
+import my.edu.tarc.fyp.shareapp.domain.PushNotification
 import my.edu.tarc.fyp.shareapp.domain.Request
 import my.edu.tarc.fyp.shareapp.domain.SharedItem
 import my.edu.tarc.fyp.shareapp.domain.UserData
@@ -449,6 +452,22 @@ class MessageViewModel @Inject constructor(
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error adding document", e)
             }
+    }
+
+    fun sendNoti(title: String, message: String, toUid: String){
+
+        db.collection("usertoken").document("${toUid}token").get()
+            .addOnSuccessListener { value ->
+                val token = value.get("token").toString()
+
+                PushNotification(
+                    NotificationData(title, message),
+                    token
+                ).also { push ->
+                    MainActivity.sendNotification(push)
+                }
+            }
+
     }
 
     private fun getCombinedId(userId1: String, userId2: String): String {

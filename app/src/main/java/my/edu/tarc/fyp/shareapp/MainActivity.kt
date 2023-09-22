@@ -1,8 +1,13 @@
 package my.edu.tarc.fyp.shareapp
 
 import android.annotation.SuppressLint
+import android.app.Notification
+import android.content.ContentValues
+import android.content.ContentValues.TAG
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -23,20 +28,69 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import my.edu.tarc.fyp.shareapp.data.RetrofitInstance
+import my.edu.tarc.fyp.shareapp.domain.PushNotification
 import my.edu.tarc.fyp.shareapp.presentation.auth.SignInScreen
 import my.edu.tarc.fyp.shareapp.presentation.auth.SignUpScreen
 import my.edu.tarc.fyp.shareapp.presentation.main.BottomBar
 import my.edu.tarc.fyp.shareapp.presentation.main.mainNavGraph
 import my.edu.tarc.fyp.shareapp.ui.theme.ShareAppTheme
 
+
+const val TOPIC = "/topics/myTopic"
+
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    val TAG = "MainActivity"
+
+    companion object {
+        fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = RetrofitInstance.api.postNotification(notification)
+                if (response.isSuccessful){
+                    Log.d(TAG, "Response: ${Gson().toJson(response)}")
+                }else{
+                    Log.e(TAG, response.errorBody().toString())
+                }
+            }catch (e: Exception){
+                Log.e(TAG, e.toString())
+            }
+        }
+    }
+
+
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        MyFirebaseMessagingService.sharedPref = getSharedPreferences("sharedPref", Context.MODE_PRIVATE)
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(
+            OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    Log.w(ContentValues.TAG, "Fetching FCM registration token failed", task.exception)
+                    return@OnCompleteListener
+                }
+
+                // Get the token
+                val token = task.result
+                MyFirebaseMessagingService.token = token
+
+            })
+
         setContent {
             ShareAppTheme {
                 // A surface container using the 'background' color from the theme
