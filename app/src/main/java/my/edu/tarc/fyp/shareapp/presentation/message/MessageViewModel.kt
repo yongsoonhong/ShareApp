@@ -409,6 +409,9 @@ class MessageViewModel @Inject constructor(
     }
 
     fun send(messageBody: String, currentUserId: String, otherUserId: String) {
+
+        sendNotification(currentUserId, messageBody, otherUserId)
+
         viewModelScope.launch {
             val messageId = UUID.randomUUID().toString() // generate a unique ID
             val timestamp = Timestamp.now() // current timestamp
@@ -452,9 +455,11 @@ class MessageViewModel @Inject constructor(
             .addOnFailureListener { e ->
                 Log.w(TAG, "Error adding document", e)
             }
+
+
     }
 
-    fun sendNoti(title: String, message: String, toUid: String){
+    fun sendNotification(title: String, message: String, toUid: String){
 
         db.collection("usertoken").document("${toUid}token").get()
             .addOnSuccessListener { value ->
