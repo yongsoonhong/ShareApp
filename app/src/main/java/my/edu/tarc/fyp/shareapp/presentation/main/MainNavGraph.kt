@@ -39,6 +39,7 @@ import my.edu.tarc.fyp.shareapp.presentation.profile.ChangePasswordScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.EditUserProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.ProfileViewModel
+import my.edu.tarc.fyp.shareapp.presentation.profile.ReportScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsFromYouScreen
 import my.edu.tarc.fyp.shareapp.presentation.profile.RequestsToYouScreen
 import my.edu.tarc.fyp.shareapp.presentation.restaurant.RestaurantApplicationFormScreen
@@ -657,8 +658,19 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController){
                     },
                     onFARClick = {
                         navController.navigate("feedback_user/${Firebase.auth.currentUser!!.uid}")
+                    },
+                    onReportClick = {
+                        navController.navigate("profile_report")
                     }
                 )
+            }
+
+            composable("profile_report"){
+                val viewModel = it.sharedViewModel<ProfileViewModel>(navController = navController)
+
+                val report by viewModel.report.collectAsState()
+
+                ReportScreen(report = report)
             }
 
             composable("profile_editUserProfile"){

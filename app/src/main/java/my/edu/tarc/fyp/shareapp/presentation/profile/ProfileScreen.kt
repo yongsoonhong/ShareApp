@@ -1,6 +1,8 @@
 package my.edu.tarc.fyp.shareapp.presentation.profile
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +44,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import my.edu.tarc.fyp.shareapp.R
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProfileScreen(
     onSignOutClick: () -> Unit,
@@ -50,7 +53,8 @@ fun ProfileScreen(
     onRequestToYouClick: () -> Unit,
     onRequestFromYouClick: () -> Unit,
     onFARClick: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onReportClick: () -> Unit
 ){
     val user = viewModel.getCurrentUser()
 
@@ -104,29 +108,59 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.padding(5.dp))
 
-        Card(
+
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
-                .clickable {
-                    onFARClick()
-                },
-            shape = RoundedCornerShape(8.dp),
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+        ){
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth().weight(1f)
+                    .padding(8.dp)
+                    .clickable {
+                        onFARClick()
+                    },
+                shape = RoundedCornerShape(8.dp),
             ) {
-                Text(
-                    text = "VIEW REVIEWS TO YOU!",
-                    modifier = Modifier.padding(10.dp),
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "VIEW REVIEWS",
+                        modifier = Modifier.padding(10.dp),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
 
+            }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth().weight(1f)
+                    .padding(8.dp)
+                    .clickable {
+                        onReportClick()
+                    },
+                shape = RoundedCornerShape(8.dp),
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "VIEW REPORT",
+                        modifier = Modifier.padding(10.dp),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+
+            }
         }
+
 
         Row(
             modifier = Modifier

@@ -34,6 +34,7 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 
+@RequiresApi(Build.VERSION_CODES.O)
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
 ): ViewModel() {
@@ -58,10 +59,64 @@ class ProfileViewModel @Inject constructor(
     private val _currentRequestsFromYouUser = MutableStateFlow<Map<Request, UserData>>(mapOf())
     val currentRequestsFromYouUser: StateFlow<Map<Request, UserData>> get() = _currentRequestsFromYouUser
 
+    private val _report = MutableStateFlow<Map<String, Long>>(mapOf())
+    val report: StateFlow<Map<String, Long>> get() = _report
+
+
 
     init {
         getCurrentRequestFromYou()
         getCurrentRequestToYou()
+        getReport()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun getReport(){
+        db.collection("reports").document("totaluser").get()
+            .addOnSuccessListener { value ->
+                val noUser = value?.get("no")
+                if (noUser != null) {
+                    val currentMap = _report.value.toMutableMap()
+                    currentMap["noUser"] = noUser as Long
+                    _report.value = currentMap
+                }
+            }
+
+        db.collection("reports").document("totalrestaurant").get()
+            .addOnSuccessListener { value ->
+                val noRestaurant = value?.get("no")
+                if (noRestaurant != null) {
+                    val currentMap = _report.value.toMutableMap()
+                    currentMap["noRestaurant"] = noRestaurant as Long
+                    _report.value = currentMap
+                }
+            }
+
+        db.collection("reports").document("totaldonation").get()
+            .addOnSuccessListener { value ->
+                val noDonation = value?.get("no")
+                if (noDonation != null) {
+                    val currentMap = _report.value.toMutableMap()
+                    currentMap["noDonation"] = noDonation as Long
+                    _report.value = currentMap
+                }
+            }
+
+        val currentDate = LocalDate.now()
+        val yyyyMM = currentDate.format(DateTimeFormatter.ofPattern("yyyyMM"))
+
+        db.collection("reports").document("donation${yyyyMM}").get()
+            .addOnSuccessListener { value ->
+                var noMonthDonation = value?.get("no")
+
+                if (noMonthDonation == null){
+                    noMonthDonation = 0
+                }
+
+                val currentMap = _report.value.toMutableMap()
+                currentMap["noMonthDonation"] = noMonthDonation as Long
+                _report.value = currentMap
+            }
     }
 
     fun getCurrentUser(): FirebaseUser{
